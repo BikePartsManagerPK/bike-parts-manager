@@ -1,0 +1,1136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#10243a"><title>Bike Parts Manager Cloud</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--navy:#10243a;--blue:#1769aa;--blue2:#eaf3fb;--bg:#f3f6fa;--line:#dce4ec;--muted:#64748b;--ink:#172536;--green:#087443}
+*{box-sizing:border-box}body{margin:0;font:15px Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(110deg,#10243a,#183d5e);color:#fff;padding:15px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:0;z-index:5;box-shadow:0 3px 14px #10243a20}
+h1{font-size:20px;margin:0;letter-spacing:.1px}header small{font-size:11px;font-weight:500;opacity:.8}.userbar{display:flex;align-items:center;gap:12px;color:#dce7f1;font-size:13px}
+main{max-width:1400px;margin:24px auto;padding:0 20px}.card{background:white;border:1px solid var(--line);border-radius:15px;padding:20px;margin-bottom:18px;box-shadow:0 5px 18px #10243a08}
+h2{font-size:19px;margin:0 0 16px}h3{margin:0 0 8px}.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}.field{flex:1;min-width:145px;position:relative}label{display:block;font-size:13px;color:#475569;margin:0 0 6px}
+input,select,button{font:inherit;border-radius:9px;padding:11px 12px;border:1px solid #cbd5e1;width:100%;background:white;color:var(--ink)}input:focus,select:focus{outline:2px solid #9bc8ee;border-color:#6ca9d8}button{background:var(--blue);color:white;border:0;cursor:pointer;font-weight:650;transition:.15s}button:hover{filter:brightness(.96);transform:translateY(-1px)}button.secondary{background:#e8eef5;color:#18324d}button.danger{background:#b42318}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{width:auto}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;padding:8px;background:#e7eef5;border-radius:12px}nav button{width:auto;background:transparent;color:#29445d;padding:10px 16px}nav button.active{background:#1769aa;color:white;box-shadow:0 2px 6px #1769aa35}
+.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}th{background:#f7f9fc;color:#40546a;font-weight:650}.muted{color:var(--muted);font-size:13px}.hidden{display:none!important}.status{padding:10px 12px;border-radius:9px;background:#eef5fb;margin:10px 0}.good{color:var(--green)}.bad{color:#b42318}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:13px}.statbox{background:linear-gradient(140deg,#fff,#f5f9fd);border:1px solid var(--line);border-radius:13px;padding:17px}.stat{font-size:26px;font-weight:750;margin-top:7px;color:#163d60}.quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:17px 0}.quick button{padding:18px;text-align:left;min-height:74px;background:#f1f6fb;color:#183b5a;border:1px solid #dbe7f2}.quick button strong{display:block;font-size:15px;margin-bottom:5px}.quick button span{font-size:12px;color:#637b91;font-weight:400}.hero-search{display:flex;gap:10px;align-items:center;margin:14px 0 18px}.hero-search input{font-size:16px;padding:14px}.hero-search button{width:auto;min-width:120px;padding:14px}.search-results{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:-10px;margin-bottom:15px}.search-results:empty{display:none}.search-results button{display:block;text-align:left;background:white;color:#18324d;border-radius:0;border-bottom:1px solid var(--line);font-weight:500}.search-results button:hover{background:#f1f6fb}
+.picker-list{position:absolute;left:0;right:0;top:100%;z-index:20;background:white;border:1px solid #cbd5e1;border-radius:10px;box-shadow:0 10px 25px #10243a25;max-height:260px;overflow:auto;margin-top:4px}
+.picker-list:empty{display:none}
+.picker-list button{display:block;width:100%;text-align:left;background:white;color:#18324d;border-radius:0;border-bottom:1px solid var(--line);padding:10px 12px;font-weight:500}
+.picker-list button:hover,.picker-list button.active{background:#eaf3fb;transform:none}
+.bill-head{display:flex;justify-content:space-between}.inline-edit{min-width:85px;padding:7px 8px;font-size:13px}.inline-edit.name{min-width:150px}.print-only{display:none}
+@media(max-width:650px){header{padding:13px 15px}main{padding:0 10px;margin:14px auto}.card{padding:15px}.hero-search{display:block}.hero-search button{width:100%;margin-top:8px}nav{gap:4px}nav button{padding:9px 10px;font-size:13px}.userbar{font-size:11px}}
+@media print{body{background:white}header,nav,.no-print,.hide-print{display:none!important}main{margin:0;max-width:none}.card{border:0;box-shadow:none}.print-only{display:block!important}}
+.subpanel{border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:14px;background:#fbfdff}.subpanel h3{margin:0 0 12px}.subpanel .row{margin:8px 0}.mini{font-size:12px;color:var(--muted)}.return-tag{display:inline-block;background:#fff3d6;color:#805500;padding:3px 7px;border-radius:6px;font-size:12px}
+</style></head>
+<body>
+<header><h1>🏍️ Bike Parts Manager <small>SHOP MANAGEMENT</small></h1><div id="userbar" class="userbar"></div></header>
+<main>
+<section id="setup" class="card">
+<h2>Connect your Supabase project</h2>
+<p class="muted">Enter your Project URL and anon/public key from Supabase → Project Settings → API. Never use the service_role or secret key here.</p>
+<div class="row"><div class="field"><label>Supabase Project URL</label><input id="supUrl" placeholder="https://xxxxxxxx.supabase.co"></div><div class="field"><label>Anon / Publishable key</label><input id="supKey" placeholder="sb_publishable_... or eyJ..."></div></div>
+<div class="actions" style="margin-top:10px"><button id="connectBtn">Connect & save on this device</button></div>
+<div id="setupMsg" class="status">First run: paste your project details, then sign up below.</div>
+</section>
+<section id="auth" class="card hidden">
+<h2>Account login / sign up</h2><div class="row"><div class="field"><label>Email</label><input id="email" type="email" autocomplete="email"></div><div class="field"><label>Password (at least 6 characters)</label><input id="password" type="password" autocomplete="current-password"></div></div>
+<div class="actions" style="margin-top:10px"><button id="signup">Create account</button><button class="secondary" id="login">Log in</button><button class="secondary" id="logout">Log out</button></div><div id="authMsg" class="status">Create an account or log in.</div>
+</section>
+<section id="app" class="hidden">
+<nav class="no-print"><button class="active" data-tab="dashboard">Dashboard</button><button data-tab="products">Products</button><button data-tab="customers">Customers</button><button data-tab="sale">New Bill</button><button data-tab="history">Sales History</button><button data-tab="returns">Returns</button><button data-tab="settings">⚙ Settings</button></nav>
+
+<section id="dashboard" class="card"><h2>Shop Dashboard</h2><p class="muted">Products dhoondein, stock dekhein aur apna kaam jaldi shuru karein.</p><div class="hero-search"><input id="homeSearch" placeholder="Smart search product name or rack number..." autocomplete="off"><button id="homeSearchBtn">Search</button></div><div id="homeSearchResults" class="search-results"></div><div class="quick no-print"><button data-go="products"><strong>＋ Add Product</strong><span>Save a new item and its rates</span></button><button data-go="sale"><strong>▤ Create New Bill</strong><span>Dealer or retail billing</span></button><button data-go="customers"><strong>♙ Customers</strong><span>Accounts, dues and payments</span></button><button data-go="history"><strong>▤ Sales History</strong><span>Find and print saved bills</span></button></div><div class="grid"><div class="statbox"><div class="muted">Products</div><div class="stat" id="statProducts">0</div></div><div class="statbox"><div class="muted">Customers</div><div class="stat" id="statCustomers">0</div></div></div><p class="muted">Data is stored in your Supabase cloud project and is available after logging in on another device.</p></section>
+
+<section id="products" class="card hidden"><h2>Products / مصنوعات</h2><div class="row">
+<div class="field"><label>Product name</label><input id="pName" autocomplete="off"></div><div class="field"><label>Category</label><input id="pCat"></div><div class="field"><label>Rack number</label><input id="pRack" placeholder="# e.g. 12"></div><div class="field"><label>Stock quantity</label><input id="pStock" type="number" min="0"></div><div class="field"><label>Purchase rate</label><input id="pBuy" type="number" min="0"></div><div class="field"><label>Dealer rate</label><input id="pDealer" type="number" min="0"></div><div class="field"><label>Retail rate</label><input id="pRetail" type="number" min="0"></div></div><div class="actions" style="margin:12px 0"><button id="saveProduct">Save product</button><button class="secondary" id="clearProduct">Clear</button></div><input id="productSearch" placeholder="Smart search: type product name (exact match upar dikhega)..." autocomplete="off" style="margin-bottom:10px"><div class="tablewrap"><table><thead><tr><th>No.</th><th>Product Name</th><th>Category</th><th>Rack Number</th><th>Stock</th><th>Purchase Rate</th><th>Dealer Rate</th><th>Retail Rate</th><th>Action</th></tr></thead><tbody id="productRows"></tbody></table></div></section>
+
+<section id="customers" class="card hidden"><h2>Customers / دکاندار</h2>
+<div class="row"><div class="field"><label>Customer / shopkeeper name</label><input id="cName" autocomplete="off"></div><div class="field"><label>Phone</label><input id="cPhone" autocomplete="off"></div><div class="field"><label>Address</label><input id="cAddress" autocomplete="off"></div><div class="field"><label>Opening balance (due)</label><input id="cOpening" type="number" value="0"></div><div class="field"><label>Credit balance</label><input id="cCredit" type="number" min="0" value="0"></div></div>
+<div class="actions" style="margin:12px 0"><button id="saveCustomer">Save customer</button></div>
+<div class="row" style="margin-bottom:10px"><div class="field"><input id="customerSearch" placeholder="Search customer name or phone (foran udhaar aur credit dekhein)..." autocomplete="off"></div></div>
+<div id="customerSearchSummary" class="status hidden"></div>
+<div class="tablewrap"><table><thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Balance due</th><th>Credit</th><th>Action</th></tr></thead><tbody id="customerRows"></tbody></table></div>
+</section>
+
+<section id="sale" class="card hidden"><h2>New Bill</h2><div class="row">
+<div class="field"><label>Billing type</label><select id="billType"><option value="dealer">Dealer / دکاندار</option><option value="retail">Retail / عام کسٹمر</option></select></div>
+<div class="field"><label>Customer name (optional — type or select)</label><input id="saleCustomer" list="customerOptions" placeholder="Type customer name or leave blank" autocomplete="off"><datalist id="customerOptions"></datalist><div id="saleCustomerInfo" class="mini" style="margin-top:4px"></div></div>
+<div class="field" style="flex:2;min-width:220px"><label>Find product (name/category/rack)</label><input id="saleSearch" placeholder="Type product name e.g. oil 700ml..." autocomplete="off"><div id="salePickerList" class="picker-list"></div></div>
+<div class="field" style="max-width:110px"><label>Quantity</label><input id="saleQty" type="number" min="1" value="1"></div>
+<div class="field" style="max-width:130px"><label>&nbsp;</label><button id="addLine">Add item</button></div>
+</div>
+<div class="tablewrap" style="margin-top:12px"><table><thead><tr><th>Product</th><th>Qty</th><th>Unit rate</th><th>Total</th><th></th></tr></thead><tbody id="cartRows"></tbody></table></div>
+<div class="row" style="margin-top:12px"><div class="field"><label>Subtotal</label><input id="billSubtotal" readonly value="0"></div><div class="field"><label>Discount (Rs)</label><input id="billDiscount" type="number" min="0" value="0" placeholder="0"></div><div class="field"><label>Net Total</label><input id="billTotal" readonly value="0"></div><div class="field"><label>Paid (Cash)</label><input id="billPaid" type="number" min="0" value="0"></div><div class="field"><label>Remaining (Udhaar)</label><input id="billDue" readonly value="0"></div><div class="field"><label>&nbsp;</label><div class="actions"><button id="saveSale">Save Bill</button><button id="savePrint" class="secondary">Save & Print</button></div></div></div>
+<p class="muted">Agar customer ka Credit jama hai to pehle Credit se katoti hogi, phir baqi udhaar mein jayega. Bill mein sirf selected Dealer ya Retail rate show hoga.</p></section>
+
+<section id="history" class="card hidden"><h2>Sales history</h2>
+<div class="row" style="margin-bottom:10px"><div class="field"><input id="historySearch" placeholder="Search customer name or product..." autocomplete="off"></div></div>
+<div class="tablewrap"><table><thead><tr><th>Customer</th><th>Net Total</th><th>Discount</th><th>Paid</th><th>Due</th><th>Action</th></tr></thead><tbody id="salesRows"></tbody></table></div><div id="saleEditor" class="subpanel hidden"></div><div id="customerBillDetails" class="subpanel hidden"></div></section>
+
+<section id="returns" class="card hidden"><h2>Product Returns</h2><p class="muted">Customer ka naam aur product khud likhein ya select karein. Stock mein wapas add ho jaye ga (aur baad mein return history delete karne par bhi stock kam nahi hoga jab tak sale na ho).</p>
+<div class="row">
+<div class="field"><label>Customer name (khud likhein ya select karein)</label><input id="returnCustomerInput" list="customerOptions" placeholder="Customer ka naam likhein..." autocomplete="off"><div id="returnCustBal" class="mini" style="margin-top:4px"></div></div>
+<div class="field"><label>Original bill / invoice (optional)</label><select id="returnSale"><option value="">Direct return (bina bill select kiye)</option></select></div>
+<div class="field" style="flex:2;min-width:220px"><label>Product name (khud likhein ya search karein)</label><input id="returnProductInput" placeholder="Product ka naam type karein..." autocomplete="off"><div id="returnPickerList" class="picker-list"></div></div>
+<div class="field" style="max-width:110px"><label>Return Qty</label><input id="returnQty" type="number" min="1" value="1"></div>
+<div class="field" style="max-width:130px"><label>Unit Rate (Rs)</label><input id="returnRate" type="number" min="0" step="0.01" value="0"></div>
+</div>
+<div class="row" style="margin-top:10px">
+<div class="field"><label>Total Return Amount (Rs)</label><input id="returnTotalAmt" readonly value="0"></div>
+<div class="field"><label>Cash Wapas Diya (Refunded Rs)</label><input id="returnCashRefund" type="number" min="0" value="0" placeholder="0"></div>
+<div class="field"><label>Udhaar (Due) se Cut (Rs)</label><input id="returnDueCut" type="number" min="0" value="0" placeholder="0"></div>
+<div class="field"><label>Credit mein Jama (Rs)</label><input id="returnCreditAdd" type="number" min="0" value="0" placeholder="0"></div>
+<div class="field" style="max-width:160px"><label>&nbsp;</label><button id="saveReturn">Save Return</button></div>
+</div>
+<div id="returnPreview" class="status">Customer aur product likhein, aur decide karein ke kitne pesay cash wapas diye, kitne udhaar se kate, aur kitne credit mein jama kiye.</div>
+<h3 style="margin-top:20px">Return History</h3>
+<div class="tablewrap"><table><thead><tr><th>Date</th><th>Invoice</th><th>Customer</th><th>Returned item</th><th>Qty</th><th>Amount</th><th>Settlement</th><th>Action</th></tr></thead><tbody id="returnRows"></tbody></table></div></section>
+
+<section id="settings" class="card hidden"><h2>⚙ Settings / Cloud Connection</h2><p class="muted">Yahan Supabase connection details change kar sakte hain. Publishable key ko private password ki tarah treat karein; service_role ya secret key kabhi yahan paste na karein.</p><div class="row"><div class="field"><label>Supabase Project URL</label><input id="settingsUrl" placeholder="https://project.supabase.co"></div><div class="field"><label>Anon / Publishable key</label><input id="settingsKey" type="password" placeholder="sb_publishable_..."></div></div><div class="actions" style="margin-top:12px"><button id="saveSettings">Save connection settings</button><button class="secondary" id="showKey">Show / hide key</button><button class="secondary" id="settingsLogout">Log out</button></div><div id="settingsMsg" class="status">Connection details are stored on this device.</div><hr style="border:0;border-top:1px solid var(--line);margin:22px 0"><h2>🔒 Private Business Reports</h2><p class="muted">Yahan sirf aap apna maal, sale, market udhaar aur estimated munafa dekh sakte hain. Reports kholne ke liye alag PIN zaroori hai. PIN isi device par save hota hai.</p><div class="actions"><button id="openPrivateReports">Open Private Reports</button><button class="secondary" id="changeReportPin">Set / Change Reports PIN</button></div><div id="privateReports" class="hidden" style="margin-top:16px"><div class="row"><div class="field"><label>From date</label><input id="reportFrom" type="date"></div><div class="field"><label>To date</label><input id="reportTo" type="date"></div><div class="field"><label>&nbsp;</label><button id="refreshReports">Update Report</button></div></div><div class="grid" style="margin-top:14px"><div class="statbox"><div class="muted">Current stock purchase value</div><div class="stat" id="rStock">Rs 0</div></div><div class="statbox"><div class="muted">Sales in selected dates</div><div class="stat" id="rSales">Rs 0</div></div><div class="statbox"><div class="muted">Market outstanding (total)</div><div class="stat" id="rDue">Rs 0</div></div><div class="statbox"><div class="muted">Customer advance credit</div><div class="stat" id="rCredit">Rs 0</div></div><div class="statbox"><div class="muted">Estimated gross profit</div><div class="stat" id="rProfit">Rs 0</div></div></div><p class="muted">Munafa estimate hai: future bills ke liye sale ke waqt ka purchase rate record hota hai. Purane bills jin ka purchase rate record nahi hua, unka munafa exact nahi niklega. Ye net profit nahi; rent, salaries aur doosre kharchay shamil nahi.</p></div></section>
+</section>
+<div id="globalMsg" class="status">Connect your project to get started.</div>
+</main>
+<script>
+let sb=null,user=null,products=[],customers=[],sales=[],saleItems=[],returnsData=[],returnItemsData=[],paymentsData=[],cart=[];
+let editingProduct=null,editingCustomer=null,editingSaleId=null;
+let selectedSaleProductId=null,selectedReturnProductId=null,selectedReturnSaleItemId=null;
+
+const $=id=>document.getElementById(id), money=n=>'Rs '+Number(n||0).toLocaleString('en-PK',{maximumFractionDigits:2});
+function titleWords(v){return String(v??'').trim()}
+function rackFormat(v){let x=String(v||'').trim();return x&&!x.startsWith('#')?'#'+x:x}
+function norm(s){return String(s||'').toLowerCase().replace(/\s+/g,' ').trim()}
+
+function editDistance(a,b){a=a.toLowerCase();b=b.toLowerCase();let d=Array.from({length:b.length+1},(_,i)=>[i]);for(let j=0;j<=a.length;j++)d[0][j]=j;for(let i=1;i<=b.length;i++)for(let j=1;j<=a.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(b[i-1]===a[j-1]?0:1));return d[b.length][a.length]}
+
+// Priority ranking: exact match -> starts with -> all query words match -> substring -> fuzzy
+function searchRank(p,q){
+  let query=norm(q);
+  if(!query)return 0;
+  let name=norm(p.name);
+  let cat=norm(p.category);
+  let rack=norm(p.rack_no);
+  let hay=[name,cat,rack].filter(Boolean).join(' ');
+  if(name===query)return 0;
+  if(name.startsWith(query))return 1;
+  let qWords=query.split(' ').filter(Boolean);
+  let allWordsInName=qWords.length>1 && qWords.every(w=>name.includes(w));
+  if(allWordsInName){
+    // Prefer closer length match so exact phrase like "clutch cola" beats longer ones
+    return 2 + (name.length - query.length)*0.001;
+  }
+  if(name.includes(query))return 3 + name.indexOf(query)*0.01;
+  if(rack===query || rack==='#'+query)return 3.5;
+  if(hay.includes(query))return 4;
+  let nWords=name.split(' ');
+  let best=99;
+  for(let w of nWords){
+    if(w.startsWith(query))best=Math.min(best,5);
+    else if(query.length>=3)best=Math.min(best,5 + editDistance(w,query)/Math.max(w.length,query.length));
+  }
+  if(qWords.some(t=>t.length>=3 && nWords.some(w=>editDistance(w,t)/Math.max(w.length,t.length)<=0.25))){
+    best=Math.min(best,5.3);
+  }
+  return best;
+}
+
+function productMatches(p,q){
+  let term=norm(q);
+  if(!term)return true;
+  return searchRank(p,term)<=5.35;
+}
+
+function sortProductsBySearch(list,q){
+  let term=norm(q);
+  if(!term)return [...list];
+  return [...list].sort((a,b)=>{
+    let ra=searchRank(a,term), rb=searchRank(b,term);
+    if(ra!==rb)return ra-rb;
+    return String(a.name||'').localeCompare(String(b.name||''));
+  });
+}
+
+function msg(id,s,ok=true){$(id).textContent=s;$(id).className='status '+(ok?'good':'bad')}
+function client(){return window.supabase.createClient(localStorage.getItem('bpm_url'),localStorage.getItem('bpm_key'))}
+function setTab(t){
+  if(!['dashboard','products','customers','sale','history','returns','settings'].includes(t))t='dashboard';
+  localStorage.setItem('bpm_active_tab',t);
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  ['dashboard','products','customers','sale','history','returns','settings'].forEach(x=>$(x).classList.toggle('hidden',x!==t));
+  if(t==='settings'){
+    $('settingsUrl').value=localStorage.getItem('bpm_url')||'';
+    $('settingsKey').value=localStorage.getItem('bpm_key')||'';
+  }
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>setTab(b.dataset.go));
+
+$('saveSettings').onclick=()=>{try{let u=$('settingsUrl').value.trim(),k=$('settingsKey').value.trim();if(!u.startsWith('https://')||!k)throw Error('Valid Project URL aur Publishable Key enter karein.');localStorage.setItem('bpm_url',u);localStorage.setItem('bpm_key',k);sb=client();msg('settingsMsg','Connection settings saved on this device. Ab dobara login karein agar sync reconnect na ho.',true)}catch(e){msg('settingsMsg',e.message,false)}};
+$('showKey').onclick=()=>{$('settingsKey').type=$('settingsKey').type==='password'?'text':'password'};
+$('settingsLogout').onclick=()=>logout();
+
+function reportNumbers(){
+  let from=$('reportFrom').value?new Date($('reportFrom').value+'T00:00:00'):null,to=$('reportTo').value?new Date($('reportTo').value+'T23:59:59'):null;
+  let inRange=sales.filter(x=>{let d=new Date(x.created_at);return (!from||d>=from)&&(!to||d<=to)});
+  let saleIds=new Set(inRange.map(x=>x.id));
+  let items=saleItems.filter(x=>saleIds.has(x.sale_id));
+  let stockValue=products.reduce((a,p)=>a+Number(p.purchase_rate||0)*Number(p.stock_qty||0),0);
+  let totalSales=inRange.reduce((a,x)=>a+Number(x.total||0),0);
+  let totalDue=customers.reduce((a,c)=>a+customerDue(c),0)+sales.filter(s=>!s.customer_id&&!customers.some(c=>saleBelongsToCustomer(s,c))).reduce((a,s)=>a+Math.max(0,Number(s.due||0)),0);
+  let credits=customers.reduce((a,c)=>a+Number(c.credit_balance||0),0);
+  let profit=items.reduce((a,x)=>{
+    let product=products.find(p=>p.id===x.product_id);
+    let cost=Number(x.purchase_rate??product?.purchase_rate??0);
+    let rate=Number(x.unit_rate??x.dealer_rate??0);
+    let netQty=Math.max(0,Number(x.quantity||0)-Number(x.returned_quantity||0));
+    return a+(rate-cost)*netQty;
+  },0)-inRange.reduce((a,x)=>a+Number(x.discount||0),0);
+  $('rStock').textContent=money(stockValue);
+  $('rSales').textContent=money(totalSales);
+  $('rDue').textContent=money(totalDue);
+  $('rCredit').textContent=money(credits);
+  $('rProfit').textContent=money(profit);
+}
+function openReports(){let pin=localStorage.getItem('bpm_reports_pin');if(!pin){let n=prompt('Private Reports ke liye naya PIN banayein (kam az kam 4 digits):');if(!n||n.length<4)return alert('PIN kam az kam 4 characters ka hona chahiye.');let c=prompt('PIN dobara enter karein:');if(c!==n)return alert('PIN match nahi hua.');localStorage.setItem('bpm_reports_pin',n);pin=n}let entered=prompt('Private Reports PIN enter karein:');if(entered!==pin)return alert('Ghalat PIN. Reports nahi kholi gayi.');$('privateReports').classList.remove('hidden');reportNumbers()}
+$('openPrivateReports').onclick=openReports;$('refreshReports').onclick=reportNumbers;$('changeReportPin').onclick=()=>{let old=localStorage.getItem('bpm_reports_pin');if(old&&prompt('Current PIN enter karein:')!==old)return alert('Current PIN ghalat hai.');let n=prompt('Naya PIN (kam az kam 4 characters):');if(!n||n.length<4)return alert('PIN kam az kam 4 characters ka hona chahiye.');if(prompt('Naya PIN dobara enter karein:')!==n)return alert('PIN match nahi hua.');localStorage.setItem('bpm_reports_pin',n);alert('Private Reports PIN update ho gaya.')};
+
+// Home search with exact-first sorting
+function runHomeSearch(){
+  let q=$('homeSearch').value.trim();
+  if(!q){$('homeSearchResults').innerHTML='';return}
+  let found=sortProductsBySearch(products.filter(p=>productMatches(p,q)),q).slice(0,15);
+  $('homeSearchResults').innerHTML=found.length?found.map(p=>`<button type="button" data-product="${p.id}"><b>${esc(p.name)}</b> &nbsp; <span class="muted">Category: ${esc(p.category||'-')} · Rack: ${esc(p.rack_no||'-')} · Stock: ${p.stock_qty} · Dealer: ${money(p.dealer_rate)} · Retail: ${money(p.retail_rate)}</span></button>`).join(''):'<div class="status">No matching product found.</div>';
+}
+$('homeSearch').oninput=runHomeSearch;$('homeSearchBtn').onclick=runHomeSearch;$('homeSearch').addEventListener('keydown',e=>{if(e.key==='Enter')runHomeSearch()});$('homeSearchResults').addEventListener('click',e=>{let b=e.target.closest('[data-product]');if(b){window.editProduct(b.dataset.product)}});
+
+$('connectBtn').onclick=()=>{try{if(!window.supabase?.createClient)throw Error('Internet connection required to load the cloud library. Refresh the page and try again.');let u=$('supUrl').value.trim(),k=$('supKey').value.trim();if(!u.startsWith('https://')||!k)return msg('setupMsg','Please enter a valid Project URL and anon/public key.',false);localStorage.setItem('bpm_url',u);localStorage.setItem('bpm_key',k);sb=client();$('auth').classList.remove('hidden');msg('setupMsg','Project details saved on this device. Now create an account or log in.')}catch(e){msg('setupMsg',e.message,false)}};
+$('signup').onclick=async()=>{try{let {data,error}=await sb.auth.signUp({email:$('email').value.trim(),password:$('password').value});if(error)throw error;msg('authMsg',data.session?'Account created.':'Sign-up submitted. If email confirmation is enabled, verify your email, then log in.')}catch(e){msg('authMsg',e.message,false)}};
+$('login').onclick=async()=>{try{let {data,error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;user=data.user;await boot()}catch(e){msg('authMsg',e.message,false)}};
+async function logout(){if(sb)await sb.auth.signOut();user=null;$('app').classList.add('hidden');$('setup').classList.add('hidden');$('auth').classList.remove('hidden');$('userbar').textContent='';$('globalMsg').classList.remove('hidden');msg('authMsg','Logged out. Log in to open your shop dashboard.')} $('logout').onclick=logout;
+async function boot(){ $('setup').classList.add('hidden');$('auth').classList.add('hidden');$('app').classList.remove('hidden');$('globalMsg').classList.add('hidden');$('userbar').innerHTML='<span>'+esc(user.email)+'</span><button id="headerLogout" style="width:auto;padding:7px 12px;background:#e8eef5;color:#18324d">Log out</button>';$('headerLogout').onclick=()=>logout();await loadAll();setTab(localStorage.getItem('bpm_active_tab')||'dashboard')}
+
+async function loadAll(){
+  try{
+    let [p,c,s,i,r,ri,pay]=await Promise.all([
+      sb.from('products').select('*').order('name'),
+      sb.from('customers').select('*').order('name'),
+      sb.from('sales').select('*, customers(name)').order('created_at',{ascending:false}),
+      sb.from('sale_items').select('*'),
+      sb.from('sales_returns').select('*').order('created_at',{ascending:false}),
+      sb.from('sales_return_items').select('*'),
+      sb.from('customer_payments').select('*').order('created_at',{ascending:false})
+    ]);
+    for(let x of [p,c,s,i,r,ri])if(x.error)throw x.error;
+    products=p.data||[];
+    customers=c.data||[];
+    sales=s.data||[];
+    saleItems=i.data||[];
+    returnsData=r.data||[];
+    returnItemsData=ri.data||[];
+    paymentsData=(pay && !pay.error)?(pay.data||[]):[];
+    render();
+  }catch(e){
+    msg('globalMsg',e.message+' — Agar return tables missing ka error aaye to supplied update SQL Supabase SQL Editor mein run karein.',false);
+  }
+}
+
+function saleBelongsToCustomer(s,c){
+  if(!s||!c)return false;
+  if(s.customer_id && s.customer_id===c.id)return true;
+  if(!s.customer_id && norm(s.customer_name) && norm(s.customer_name)===norm(c.name))return true;
+  return false;
+}
+
+// Accurate due calculation: opening_balance + sum of active sales due (never negative)
+function customerDue(c){
+  if(!c)return 0;
+  let open=Number(c.opening_balance||0);
+  let salesDue=sales.filter(s=>saleBelongsToCustomer(s,c)).reduce((a,s)=>a+Math.max(0,Number(s.due||0)),0);
+  return Math.max(0,Number((open+salesDue).toFixed(2)));
+}
+
+function findCustomerByName(name){
+  let n=norm(name);
+  if(!n)return null;
+  return customers.find(c=>norm(c.name)===n)||null;
+}
+
+function render(){
+  $('statProducts').textContent=products.length;
+  $('statCustomers').textContent=customers.length;
+
+  // Products table (exact/closest search match always on top)
+  let q=$('productSearch').value.trim();
+  let filteredProducts=products.filter(p=>productMatches(p,q));
+  let visible=q?sortProductsBySearch(filteredProducts,q):[...filteredProducts].sort((a,b)=>new Date(a.created_at||0)-new Date(b.created_at||0));
+
+  $('productRows').innerHTML=visible.map((p,idx)=>{
+    let no=idx+1;
+    if(editingProduct===p.id){
+      return `<tr data-row-id="${p.id}"><td>${no}</td><td><input class="inline-edit name" data-f="name" value="${esc(p.name)}"></td><td><input class="inline-edit" data-f="category" value="${esc(p.category||'')}"></td><td><input class="inline-edit" data-f="rack_no" value="${esc(p.rack_no||'')}"></td><td><input class="inline-edit" data-f="stock_qty" type="number" min="0" value="${p.stock_qty}"></td><td><input class="inline-edit" data-f="purchase_rate" type="number" min="0" value="${p.purchase_rate}"></td><td><input class="inline-edit" data-f="dealer_rate" type="number" min="0" value="${p.dealer_rate}"></td><td><input class="inline-edit" data-f="retail_rate" type="number" min="0" value="${p.retail_rate}"></td><td><div class="actions"><button onclick="saveInlineProduct('${p.id}')">Save</button><button class="secondary" onclick="cancelInlineProduct()">Cancel</button></div></td></tr>`;
+    }
+    return `<tr><td>${no}</td><td>${esc(p.name)}</td><td>${esc(p.category||'-')}</td><td>${esc(p.rack_no||'-')}</td><td>${p.stock_qty}</td><td>${money(p.purchase_rate)}</td><td>${money(p.dealer_rate)}</td><td>${money(p.retail_rate)}</td><td><div class="actions"><button class="secondary" onclick="editProduct('${p.id}')">Edit</button><button class="danger" onclick="deleteProduct('${p.id}')">Delete</button></div></td></tr>`;
+  }).join('');
+
+  // Customers table with search filter + inline edit (including credit & due adjustment) + 0-balance delete
+  let cq=norm($('customerSearch')?.value||'');
+  let visibleCustomers=customers.filter(c=>{
+    if(!cq)return true;
+    return norm(c.name).includes(cq)||norm(c.phone).includes(cq)||norm(c.address).includes(cq);
+  }).sort((a,b)=>{
+    if(!cq)return String(a.name||'').localeCompare(String(b.name||''));
+    let exactA=norm(a.name)===cq?0:(norm(a.name).startsWith(cq)?1:2);
+    let exactB=norm(b.name)===cq?0:(norm(b.name).startsWith(cq)?1:2);
+    return exactA-exactB || String(a.name||'').localeCompare(String(b.name||''));
+  });
+
+  if(cq){
+    let sumEl=$('customerSearchSummary');
+    if(visibleCustomers.length){
+      sumEl.classList.remove('hidden');
+      sumEl.innerHTML=visibleCustomers.slice(0,5).map(c=>`<b>${esc(c.name)}</b>: Udhaar (Due) = <span class="bad">${money(customerDue(c))}</span> · Credit = <span class="good">${money(c.credit_balance||0)}</span>`).join(' &nbsp;|&nbsp; ');
+    }else{
+      sumEl.classList.remove('hidden');
+      sumEl.textContent='Is naam ka koi customer nahi mila.';
+    }
+  }else{
+    $('customerSearchSummary')?.classList.add('hidden');
+  }
+
+  $('customerRows').innerHTML=visibleCustomers.map(c=>{
+    let due=customerDue(c), credit=Number(c.credit_balance||0);
+    let isZero=Math.abs(due)<0.01 && Math.abs(credit)<0.01;
+    if(editingCustomer===c.id){
+      return `<tr data-cust-row="${c.id}">
+        <td><input class="inline-edit name" data-cf="name" value="${esc(c.name)}"></td>
+        <td><input class="inline-edit" data-cf="phone" value="${esc(c.phone||'')}"></td>
+        <td><input class="inline-edit" data-cf="address" value="${esc(c.address||'')}"></td>
+        <td><input class="inline-edit" data-cf="total_due" type="number" min="0" step="0.01" value="${due}" title="Total Udhaar"></td>
+        <td><input class="inline-edit" data-cf="credit_balance" type="number" min="0" step="0.01" value="${credit}" title="Credit Balance"></td>
+        <td><div class="actions"><button onclick="saveInlineCustomer('${c.id}')">Save</button><button class="secondary" onclick="cancelInlineCustomer()">Cancel</button></div></td>
+      </tr>`;
+    }
+    return `<tr>
+      <td><b>${esc(c.name)}</b></td>
+      <td>${esc(c.phone||'')}</td>
+      <td>${esc(c.address||'')}</td>
+      <td class="${due>0?'bad':''}">${money(due)}</td>
+      <td class="${credit>0?'good':''}">${money(credit)}</td>
+      <td><div class="actions">
+        <button class="secondary" onclick="showCustomerBills('${c.id}')">Details</button>
+        <button class="secondary" onclick="receivePayment('${c.id}')">Receive Payment</button>
+        <button class="secondary" onclick="editCustomer('${c.id}')">Edit</button>
+        <button class="danger" onclick="deleteCustomer('${c.id}')" title="${isZero?'Delete customer':'Delete ke liye Due aur Credit 0 hona chahiye'}">Delete</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  $('customerOptions').innerHTML=customers.map(c=>`<option value="${esc(c.name)}"></option>`).join('');
+
+  // Sales History: Date & Invoice hidden by default; shown inside Details
+  let hq=norm($('historySearch')?.value||'');
+  let visibleSales=sales.filter(s=>{
+    if(!hq)return true;
+    let cname=norm(s.customer_name||s.customers?.name||'');
+    let inv=norm(s.invoice_no||'');
+    let hasProd=saleItems.some(x=>x.sale_id===s.id && norm(x.product_name).includes(hq));
+    return cname.includes(hq)||inv.includes(hq)||hasProd;
+  });
+
+  $('salesRows').innerHTML=visibleSales.map(s=>{
+    let detailRows=saleItems.filter(x=>x.sale_id===s.id);
+    let cname=s.customer_name||s.customers?.name||'Walk-in';
+    return `<tr>
+      <td><b>${esc(cname)}</b></td>
+      <td>${money(s.total)}</td>
+      <td>${money(s.discount||0)}</td>
+      <td>${money(s.paid)}</td>
+      <td class="${Number(s.due||0)>0?'bad':''}">${money(s.due)}</td>
+      <td><div class="actions">
+        <button class="secondary" onclick="toggleSaleDetails('${s.id}')">Details</button>
+        <button class="secondary" onclick="editSale('${s.id}')">Edit Bill</button>
+        ${Number(s.due||0)>0?`<button onclick="markSalePaid('${s.id}')">Paid</button>`:''}
+        <button class="secondary" onclick="printSale('${s.id}')">Print</button>
+        <button class="danger" onclick="deleteSale('${s.id}')">Delete</button>
+      </div></td>
+    </tr>
+    <tr id="saleDetails-${s.id}" class="hidden">
+      <td colspan="6">
+        <div class="status" style="margin:4px 0 10px">
+          <strong>Invoice:</strong> ${esc(s.invoice_no)} &nbsp;|&nbsp;
+          <strong>Date:</strong> ${new Date(s.created_at).toLocaleString()} &nbsp;|&nbsp;
+          <strong>Customer:</strong> ${esc(cname)}
+        </div>
+        <strong>Sold items:</strong>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Product</th><th>Qty gaye</th><th>Return</th><th>Customer ne rakhe</th><th>Rate</th><th>Line Total</th></tr></thead>
+            <tbody>${detailRows.length?detailRows.map(x=>{
+              let qSold=Number(x.quantity||x.qty||0);
+              let qRet=Number(x.returned_quantity||0);
+              let qKept=Math.max(0,qSold-qRet);
+              let rate=Number(x.unit_rate??x.dealer_rate??0);
+              return `<tr><td>${esc(x.product_name||x.name||'')}</td><td>${qSold}</td><td>${qRet}</td><td>${qKept}</td><td>${money(rate)}</td><td>${money(qKept*rate)}</td></tr>`;
+            }).join(''):'<tr><td colspan="6">No item details found for this bill.</td></tr>'}</tbody>
+          </table>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  renderReturnSection();
+  updateSaleCustomerBadge();
+}
+
+window.toggleSaleDetails=id=>{let row=$('saleDetails-'+id);if(row)row.classList.toggle('hidden')};
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+$('productSearch').oninput=()=>render();
+if($('customerSearch'))$('customerSearch').oninput=()=>render();
+if($('historySearch'))$('historySearch').oninput=()=>render();
+
+// Product Save / Inline Edit / Delete
+let productSaving=false;
+$('saveProduct').onclick=async()=>{
+  if(productSaving)return;
+  productSaving=true;$('saveProduct').disabled=true;$('saveProduct').textContent='Saving...';
+  try{
+    let v={name:titleWords($('pName').value),code:null,category:titleWords($('pCat').value)||null,purchase_rate:+$('pBuy').value||0,retail_rate:+$('pRetail').value||0,dealer_rate:+$('pDealer').value||0,stock_qty:+$('pStock').value||0,rack_no:rackFormat($('pRack').value)||null};
+    if(!v.name)throw Error('Product name is required');
+    if(!editingProduct){
+      let duplicate=products.some(p=>norm(p.name)===norm(v.name)&&norm(p.category)===norm(v.category)&&Number(p.purchase_rate||0)===v.purchase_rate&&Number(p.dealer_rate||0)===v.dealer_rate&&Number(p.retail_rate||0)===v.retail_rate);
+      if(duplicate&&!confirm('Ye product pehle se saved hai. Phir bhi save karna hai?'))return;
+    }
+    let r=editingProduct?await sb.from('products').update(v).eq('id',editingProduct):await sb.from('products').insert({...v,user_id:user.id});
+    if(r.error)throw r.error;
+    editingProduct=null;clearProduct();await loadAll();msg('globalMsg','Product saved to cloud.');
+  }catch(e){msg('globalMsg',e.message,false)}finally{productSaving=false;$('saveProduct').disabled=false;$('saveProduct').textContent='Save product'}
+};
+function clearProduct(){['pName','pCat','pBuy','pRetail','pDealer','pStock','pRack'].forEach(x=>$(x).value='');editingProduct=null}
+$('clearProduct').onclick=clearProduct;
+window.editProduct=id=>{editingProduct=id;setTab('products');render()};
+window.cancelInlineProduct=()=>{editingProduct=null;render()};
+window.saveInlineProduct=async id=>{
+  try{
+    let tr=document.querySelector(`[data-row-id="${id}"]`),v={};
+    tr.querySelectorAll('[data-f]').forEach(el=>{let f=el.dataset.f;v[f]=['stock_qty','purchase_rate','dealer_rate','retail_rate'].includes(f)?Number(el.value||0):el.value.trim()});
+    v.name=titleWords(v.name);v.category=titleWords(v.category)||null;v.rack_no=rackFormat(v.rack_no)||null;
+    if(!v.name)throw Error('Product name is required');
+    if(v.stock_qty<0)throw Error('Stock cannot be negative');
+    let r=await sb.from('products').update(v).eq('id',id);
+    if(r.error)throw r.error;
+    editingProduct=null;await loadAll();msg('globalMsg','Product updated.');
+  }catch(e){msg('globalMsg',e.message,false)}
+};
+window.deleteProduct=async id=>{
+  let p=products.find(x=>x.id===id);if(!p)return;
+  if(!confirm('Product "'+p.name+'" delete karna hai?'))return;
+  try{
+    let used=await sb.from('sale_items').select('id',{count:'exact',head:true}).eq('product_id',id);
+    if(used.error)throw used.error;
+    if(used.count>0)throw Error('Ye product purane bills mein use hua hai, is liye history safe rakhne ke liye delete nahi ho sakta.');
+    let r=await sb.from('products').delete().eq('id',id);
+    if(r.error)throw r.error;
+    await loadAll();msg('globalMsg','Product deleted.');
+  }catch(e){msg('globalMsg',e.message,false)}
+};
+
+// Customer Save / Inline Edit (with direct Due & Credit editing) / Delete
+let customerSaving=false;
+$('saveCustomer').onclick=async()=>{
+  if(customerSaving)return;
+  customerSaving=true;$('saveCustomer').disabled=true;$('saveCustomer').textContent='Saving...';
+  try{
+    let v={
+      name:titleWords($('cName').value),
+      phone:$('cPhone').value.trim()||null,
+      address:$('cAddress').value.trim()||null,
+      opening_balance:Math.max(0,+$('cOpening').value||0),
+      credit_balance:Math.max(0,+$('cCredit').value||0),
+      user_id:user.id
+    };
+    if(!v.name)throw Error('Customer name is required');
+    let r=await sb.from('customers').insert(v);
+    if(r.error)throw r.error;
+    ['cName','cPhone','cAddress'].forEach(x=>$(x).value='');
+    $('cOpening').value=0;$('cCredit').value=0;
+    await loadAll();msg('globalMsg','Customer saved to cloud.');
+  }catch(e){msg('globalMsg',e.message,false)}finally{customerSaving=false;$('saveCustomer').disabled=false;$('saveCustomer').textContent='Save customer'}
+};
+
+window.editCustomer=id=>{editingCustomer=id;render()};
+window.cancelInlineCustomer=()=>{editingCustomer=null;render()};
+window.saveInlineCustomer=async id=>{
+  try{
+    let c=customers.find(x=>x.id===id);if(!c)return;
+    let tr=document.querySelector(`[data-cust-row="${id}"]`);
+    let name=titleWords(tr.querySelector('[data-cf="name"]').value);
+    let phone=tr.querySelector('[data-cf="phone"]').value.trim()||null;
+    let address=tr.querySelector('[data-cf="address"]').value.trim()||null;
+    let desiredDue=Math.max(0,Number(tr.querySelector('[data-cf="total_due"]').value||0));
+    let desiredCredit=Math.max(0,Number(tr.querySelector('[data-cf="credit_balance"]').value||0));
+    if(!name)throw Error('Customer name is required');
+
+    // Sync total_due cleanly: if desiredDue < current sales due, reduce oldest sales due; else put remainder in opening_balance
+    let custSales=sales.filter(s=>saleBelongsToCustomer(s,c)&&Number(s.due||0)>0).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+    let currentSalesDue=custSales.reduce((a,s)=>a+Number(s.due||0),0);
+    let newOpening=0;
+    if(desiredDue>=currentSalesDue){
+      newOpening=Number((desiredDue-currentSalesDue).toFixed(2));
+    }else{
+      newOpening=0;
+      let toReduce=Number((currentSalesDue-desiredDue).toFixed(2));
+      for(let s of custSales){
+        if(toReduce<=0)break;
+        let sDue=Number(s.due||0);
+        let cut=Math.min(sDue,toReduce);
+        let r=await sb.from('sales').update({paid:Number(s.paid||0)+cut,due:Number((sDue-cut).toFixed(2))}).eq('id',s.id);
+        if(r.error)throw r.error;
+        toReduce=Number((toReduce-cut).toFixed(2));
+      }
+    }
+
+    let r=await sb.from('customers').update({
+      name,phone,address,
+      opening_balance:newOpening,
+      credit_balance:Number(desiredCredit.toFixed(2))
+    }).eq('id',id);
+    if(r.error)throw r.error;
+
+    if(norm(name)!==norm(c.name)){
+      await sb.from('sales').update({customer_name:name}).eq('customer_id',id);
+    }
+
+    editingCustomer=null;
+    await loadAll();
+    msg('globalMsg',`Customer "${name}" updated (Due: ${money(desiredDue)}, Credit: ${money(desiredCredit)}).`);
+  }catch(e){msg('globalMsg',e.message,false)}
+};
+
+window.deleteCustomer=async id=>{
+  let c=customers.find(x=>x.id===id);if(!c)return;
+  let due=customerDue(c),credit=Number(c.credit_balance||0);
+  if(due>0.009||credit>0.009)return msg('globalMsg',`Customer delete nahi ho sakta. Pehle Edit mein ja kar Due (${money(due)}) aur Credit (${money(credit)}) ko 0 karein.`,false);
+  if(!confirm('Customer "'+c.name+'" delete karna hai? Uske purane bills Sales History mein customer name ke sath mehfooz rahenge.'))return;
+  try{
+    let detach=await sb.from('sales').update({customer_id:null}).eq('customer_id',id);
+    if(detach.error)throw detach.error;
+    let r=await sb.from('customers').delete().eq('id',id);
+    if(r.error)throw r.error;
+    await loadAll();msg('globalMsg','Customer deleted. Purane bills Sales History mein safe hain.');
+  }catch(e){msg('globalMsg',e.message,false)}
+};
+
+// NEW BILL: Custom Product Picker (Fixes 700ml vs 1000ml wrong price bug)
+function renderSalePicker(){
+  let box=$('salePickerList');
+  let q=$('saleSearch').value.trim();
+  if(!q){box.innerHTML='';return}
+  let type=$('billType').value;
+  let matches=sortProductsBySearch(products.filter(p=>productMatches(p,q)),q).slice(0,15);
+  if(!matches.length){
+    box.innerHTML='<div style="padding:10px 12px" class="muted">Koi product nahi mila.</div>';
+    return;
+  }
+  box.innerHTML=matches.map(p=>{
+    let rate=Number(type==='retail'?p.retail_rate:p.dealer_rate);
+    return `<button type="button" data-pick-id="${p.id}">
+      <strong>${esc(p.name)}</strong> — <span class="good">${money(rate)}</span>
+      <span class="mini"> (Stock: ${p.stock_qty} · Rack: ${esc(p.rack_no||'-')} · Cat: ${esc(p.category||'-')})</span>
+    </button>`;
+  }).join('');
+}
+
+$('saleSearch').addEventListener('input',()=>{
+  selectedSaleProductId=null;
+  renderSalePicker();
+});
+$('saleSearch').addEventListener('focus',()=>{
+  if($('saleSearch').value.trim())renderSalePicker();
+});
+$('salePickerList').addEventListener('click',e=>{
+  let btn=e.target.closest('[data-pick-id]');
+  if(!btn)return;
+  let p=products.find(x=>x.id===btn.dataset.pickId);
+  if(!p)return;
+  selectedSaleProductId=p.id;
+  $('saleSearch').value=p.name;
+  $('salePickerList').innerHTML='';
+  $('saleQty').focus();
+});
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#saleSearch')&&!e.target.closest('#salePickerList'))$('salePickerList').innerHTML='';
+  if(!e.target.closest('#returnProductInput')&&!e.target.closest('#returnPickerList'))$('returnPickerList').innerHTML='';
+});
+
+function updateSaleCustomerBadge(){
+  let el=$('saleCustomerInfo');
+  if(!el)return;
+  let c=findCustomerByName($('saleCustomer')?.value||'');
+  if(!c){el.textContent='';return}
+  let due=customerDue(c), credit=Number(c.credit_balance||0);
+  el.innerHTML=`Mojooda Udhaar: <b class="bad">${money(due)}</b> · Credit: <b class="good">${money(credit)}</b>`;
+  drawCart();
+}
+$('saleCustomer').addEventListener('input',updateSaleCustomerBadge);
+
+$('addLine').onclick=()=>{
+  let p=null;
+  if(selectedSaleProductId){
+    p=products.find(x=>x.id===selectedSaleProductId);
+  }
+  if(!p){
+    let term=norm($('saleSearch').value);
+    if(!term)return msg('globalMsg','Product name type karein aur list se select karein.',false);
+    // Strict exact match first, otherwise top sorted match
+    p=products.find(x=>norm(x.name)===term || norm(x.rack_no)===term || norm(x.rack_no)==='#'+term)
+      || sortProductsBySearch(products.filter(x=>productMatches(x,term)),term)[0];
+  }
+  if(!p)return msg('globalMsg','Product not found. Try another spelling.',false);
+  let qty=+$('saleQty').value;
+  if(!Number.isInteger(qty)||qty<1||qty>p.stock_qty)return msg('globalMsg',`Quantity 1 se ${p.stock_qty} ke darmiyan honi chahiye.`,false);
+  let type=$('billType').value;
+  let rate=Number(type==='retail'?p.retail_rate:p.dealer_rate);
+  let old=cart.find(x=>x.id===p.id);
+  if(old){
+    if(old.qty+qty>p.stock_qty)return msg('globalMsg','Not enough stock.',false);
+    old.qty+=qty;
+    old.rate=rate;
+  }else{
+    cart.push({id:p.id,name:p.name,qty,rate});
+  }
+  selectedSaleProductId=null;
+  $('saleSearch').value='';
+  $('salePickerList').innerHTML='';
+  $('saleQty').value=1;
+  drawCart();
+};
+
+function drawCart(){
+  $('cartRows').innerHTML=cart.map((x,i)=>`<tr><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.rate)}</td><td>${money(x.qty*x.rate)}</td><td><button class="danger" onclick="removeLine(${i})">Remove</button></td></tr>`).join('');
+  let subtotal=cart.reduce((a,x)=>a+x.qty*x.rate,0);
+  let discount=Math.min(subtotal,Math.max(0,Number($('billDiscount').value)||0));
+  let total=subtotal-discount;
+  let cashPaid=Math.max(0,Number($('billPaid').value)||0);
+  let c=findCustomerByName($('saleCustomer')?.value||'');
+  let availCredit=Number(c?.credit_balance||0);
+  let creditUsed=Math.min(availCredit,total);
+  let remAfterCredit=Math.max(0,total-creditUsed);
+  let due=Math.max(0,remAfterCredit-cashPaid);
+  $('billSubtotal').value=subtotal;
+  $('billTotal').value=total;
+  $('billDue').value=due;
+}
+window.removeLine=i=>{cart.splice(i,1);drawCart()};
+$('billPaid').oninput=drawCart;$('billDiscount').oninput=drawCart;
+$('billType').onchange=()=>{
+  cart=cart.map(x=>{let p=products.find(y=>y.id===x.id);return {...x,rate:Number($('billType').value==='retail'?p.retail_rate:p.dealer_rate)}});
+  drawCart();
+  if($('saleSearch').value.trim())renderSalePicker();
+};
+
+let billSaving=false;
+async function saveCurrentBill(shouldPrint){
+  if(billSaving)return;
+  billSaving=true;$('saveSale').disabled=true;$('savePrint').disabled=true;$('saveSale').textContent='Saving...';$('savePrint').textContent='Saving...';
+  try{
+    if(!cart.length)throw Error('Add at least one product');
+    let enteredName=titleWords($('saleCustomer').value);
+    let customer=findCustomerByName(enteredName);
+    if(!customer&&enteredName){
+      let made=await sb.from('customers').insert({user_id:user.id,name:enteredName,phone:null,address:null,opening_balance:0,credit_balance:0}).select().single();
+      if(made.error)throw made.error;
+      customer=made.data;
+      customers.push(customer);
+    }
+    let cid=customer?.id||null;
+    let subtotal=cart.reduce((a,x)=>a+x.qty*x.rate,0);
+    let discount=Math.min(subtotal,Math.max(0,Number($('billDiscount').value)||0));
+    let total=subtotal-discount;
+    let enteredCash=Math.max(0,+$('billPaid').value||0);
+    let type=$('billType').value;
+
+    // Step 1: Pehle customer ke Credit se pesay katenge
+    let credit=Number(customer?.credit_balance||0);
+    let creditUsed=customer?Math.min(credit,total):0;
+    let remainingAfterCredit=total-creditUsed;
+
+    // Step 2: Baqi raqam cash paid se puri hogi, bacha to udhaar (due) mein jayega
+    let paidFromCash=Math.min(enteredCash,remainingAfterCredit);
+    let extraCash=Math.max(0,enteredCash-remainingAfterCredit);
+    let due=Number((remainingAfterCredit-paidFromCash).toFixed(2));
+
+    if(!customer && due>0){
+      throw Error('Udhar wale bill ke liye customer ya dukandar ka naam likhna zaroori hai.');
+    }
+
+    let invoice='BPM-'+Date.now();
+    let totalPaidOnBill=Number((paidFromCash+creditUsed).toFixed(2));
+    let ins=await sb.from('sales').insert({
+      user_id:user.id,customer_id:cid,customer_name:enteredName||null,
+      invoice_no:invoice,total,discount,paid:totalPaidOnBill,due,bill_type:type,rate_type:type
+    }).select().single();
+    if(ins.error)throw ins.error;
+    let saleId=ins.data.id;
+
+    for(let x of cart){
+      let prod=products.find(y=>y.id===x.id);
+      let ir=await sb.from('sale_items').insert({
+        user_id:user.id,sale_id:saleId,product_id:x.id,product_name:x.name,
+        quantity:x.qty,dealer_rate:x.rate,unit_rate:x.rate,rate_type:type,
+        purchase_rate:Number(prod.purchase_rate||0),line_total:x.qty*x.rate
+      });
+      if(ir.error)throw ir.error;
+      let ur=await sb.from('products').update({stock_qty:prod.stock_qty-x.qty}).eq('id',x.id);
+      if(ur.error)throw ur.error;
+    }
+
+    // Extra cash agar diya ho to pehle purana udhaar clear kare, phir credit mein jaye
+    let extraLeft=extraCash;
+    if(customer&&extraLeft>0){
+      let opening=Number(customer.opening_balance||0),openingPay=Math.min(opening,extraLeft);
+      if(openingPay>0){
+        let r=await sb.from('customers').update({opening_balance:opening-openingPay}).eq('id',cid);
+        if(r.error)throw r.error;
+        extraLeft-=openingPay;
+      }
+      let oldDue=sales.filter(x=>saleBelongsToCustomer(x,customer)&&Number(x.due)>0).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+      for(let oldSale of oldDue){
+        if(extraLeft<=0)break;
+        let payOld=Math.min(Number(oldSale.due),extraLeft);
+        let r=await sb.from('sales').update({paid:Number(oldSale.paid||0)+payOld,due:Number(oldSale.due)-payOld}).eq('id',oldSale.id);
+        if(r.error)throw r.error;
+        extraLeft-=payOld;
+      }
+    }
+
+    let newCredit=customer?Number((Math.max(0,credit-creditUsed)+extraLeft).toFixed(2)):0;
+    if(customer&&(creditUsed>0||extraCash>0||newCredit!==credit)){
+      let cr=await sb.from('customers').update({credit_balance:newCredit}).eq('id',cid);
+      if(cr.error)throw cr.error;
+    }
+
+    let savedItems=cart.map(x=>({...x}));
+    let savedSale={...ins.data,subtotal,discount,total,paid:totalPaidOnBill,due};
+    cart=[];$('billPaid').value=0;$('billDiscount').value=0;$('saleCustomer').value='';
+    drawCart();
+    await loadAll();
+    if(shouldPrint)printInvoice(savedSale,enteredName,savedItems);
+    msg('globalMsg',`Bill saved. ${customer?`Credit se kata: ${money(creditUsed)}; Baqi Udhaar: ${money(due)}; New Credit: ${money(newCredit)}.`:''}`);
+  }catch(e){msg('globalMsg',e.message,false)}finally{billSaving=false;$('saveSale').disabled=false;$('savePrint').disabled=false;$('saveSale').textContent='Save Bill';$('savePrint').textContent='Save & Print'}
+}
+$('saveSale').onclick=()=>saveCurrentBill(false);$('savePrint').onclick=()=>saveCurrentBill(true);
+
+window.receivePayment=async id=>{
+  let c=customers.find(x=>x.id===id);if(!c)return;
+  let amount=Number(prompt(`Payment amount from ${c.name} (Current Due: ${money(customerDue(c))}):`,''));
+  if(!Number.isFinite(amount)||amount<=0)return;
+  try{
+    let opening=Number(c.opening_balance||0),left=amount,openingPaid=Math.min(opening,left);
+    left=Number((left-openingPaid).toFixed(2));
+    let upd=await sb.from('customers').update({opening_balance:Number((opening-openingPaid).toFixed(2))}).eq('id',id);
+    if(upd.error)throw upd.error;
+    let outstanding=sales.filter(x=>saleBelongsToCustomer(x,c)&&Number(x.due)>0).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+    for(let sale of outstanding){
+      if(left<=0)break;
+      let pay=Math.min(Number(sale.due),left);
+      let r=await sb.from('sales').update({paid:Number(sale.paid||0)+pay,due:Number((Number(sale.due)-pay).toFixed(2))}).eq('id',sale.id);
+      if(r.error)throw r.error;
+      left=Number((left-pay).toFixed(2));
+    }
+    if(left>0){
+      let fresh=await sb.from('customers').select('credit_balance').eq('id',id).single();
+      if(fresh.error)throw fresh.error;
+      let r=await sb.from('customers').update({credit_balance:Number((Number(fresh.data.credit_balance||0)+left).toFixed(2))}).eq('id',id);
+      if(r.error)throw r.error;
+    }
+    let logRes=await sb.from('customer_payments').insert({
+      user_id:user.id,
+      customer_id:c.id,
+      customer_name:c.name,
+      amount:Number(amount.toFixed(2)),
+      note:'Udhaar payment received'
+    });
+    if(logRes.error)throw logRes.error;
+    await loadAll();msg('globalMsg',`${money(amount)} payment receive ho gayi aur record save ho gaya.`);
+  }catch(e){msg('globalMsg',e.message,false)}
+};
+
+let salePaymentSaving=new Set();
+window.markSalePaid=async id=>{
+  let s=sales.find(x=>x.id===id);if(!s||salePaymentSaving.has(id)||Number(s.due||0)<=0)return;
+  if(!confirm(`Invoice ${s.invoice_no} ka remaining ${money(s.due)} receive ho gaya? Paid mark kar dein?`))return;
+  salePaymentSaving.add(id);
+  try{
+    let paid=Number(s.total||0),r=await sb.from('sales').update({paid,due:0}).eq('id',id);
+    if(r.error)throw r.error;
+    await loadAll();msg('globalMsg',`Invoice ${s.invoice_no} paid mark ho gaya.`);
+  }catch(e){msg('globalMsg','Paid update failed: '+e.message,false)}finally{salePaymentSaving.delete(id)}
+};
+
+// Bill Editor
+window.editSale=async id=>{
+  let s=sales.find(x=>x.id===id);if(!s)return;
+  let items=saleItems.filter(x=>x.sale_id===id);
+  editingSaleId=id;
+  let panel=$('saleEditor');panel.classList.remove('hidden');
+  panel.innerHTML=`<h3>Edit bill ${esc(s.invoice_no)}</h3><p class="mini">Products, quantity, rate, discount aur paid amount edit karein. Stock aur customer due bhi update honge.</p><div id="editSaleLines">${items.map(x=>`<div class="row" data-edit-item="${x.id}" style="align-items:end"><div class="field"><label>Product</label><select data-edit-product>${products.map(p=>`<option value="${p.id}" ${p.id===x.product_id?'selected':''}>${esc(p.name)}</option>`).join('')}</select></div><div class="field"><label>Quantity (sold)</label><input data-edit-qty type="number" min="${Number(x.returned_quantity||0)}" value="${Number(x.quantity||0)}"></div><div class="field"><label>Rate</label><input data-edit-rate type="number" min="0" step="0.01" value="${Number(x.unit_rate??x.dealer_rate??0)}"></div><div class="field"><label>Returned (locked)</label><input disabled value="${Number(x.returned_quantity||0)}"></div><div class="field"><button class="danger" type="button" onclick="removeEditSaleLine(this)">Remove</button></div></div>`).join('')}</div><button class="secondary" type="button" onclick="addEditSaleLine()">+ Add product</button><div class="row" style="margin-top:12px"><div class="field"><label>Discount (Rs)</label><input id="editSaleDiscount" type="number" min="0" value="${Number(s.discount||0)}"></div><div class="field"><label>Paid amount (Rs)</label><input id="editSalePaidAmount" type="number" min="0" value="${Number(s.paid||0)}"></div><div class="field"><label>New total</label><input id="editSaleTotalPreview" readonly value="${Number(s.total||0)}"></div><div class="field"><label>New remaining due</label><input id="editSaleDuePreview" readonly value="${Number(s.due||0)}"></div></div><div class="actions"><button onclick="saveSaleEdit('${id}')">Save Bill Changes</button><button class="secondary" onclick="closeSaleEditor()">Cancel</button></div>`;
+  panel.querySelectorAll('[data-edit-qty],[data-edit-rate],#editSaleDiscount,#editSalePaidAmount').forEach(el=>el.addEventListener('input',updateSaleEditPreview));
+  updateSaleEditPreview();
+  panel.scrollIntoView({behavior:'smooth',block:'start'});
+};
+window.removeEditSaleLine=btn=>{let row=btn.closest('[data-edit-item]');if(row){if(Number(row.querySelector('input[disabled]')?.value||0)>0)return alert('Jis item ka return record ho chuka hai us line ko remove nahi kar sakte.');row.remove();updateSaleEditPreview()}};
+window.addEditSaleLine=()=>{let host=$('editSaleLines'),div=document.createElement('div');div.className='row';div.dataset.editItem='new';div.style.alignItems='end';div.innerHTML=`<div class="field"><label>Product</label><select data-edit-product>${products.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select></div><div class="field"><label>Quantity</label><input data-edit-qty type="number" min="1" value="1"></div><div class="field"><label>Rate</label><input data-edit-rate type="number" min="0" step="0.01" value="0"></div><div class="field"><button class="danger" type="button" onclick="removeEditSaleLine(this)">Remove</button></div>`;host.appendChild(div);div.querySelectorAll('input').forEach(el=>el.addEventListener('input',updateSaleEditPreview));updateSaleEditPreview()};
+function updateSaleEditPreview(){let panel=$('saleEditor');if(!panel||panel.classList.contains('hidden'))return;let sub=0;panel.querySelectorAll('[data-edit-item]').forEach(row=>{sub+=Math.max(0,Number(row.querySelector('[data-edit-qty]')?.value||0)-Number(row.querySelector('input[disabled]')?.value||0))*Math.max(0,Number(row.querySelector('[data-edit-rate]')?.value||0))});let discount=Math.min(sub,Math.max(0,Number($('editSaleDiscount')?.value||0))),total=sub-discount,paid=Math.max(0,Number($('editSalePaidAmount')?.value||0));if($('editSaleTotalPreview'))$('editSaleTotalPreview').value=total.toFixed(2);if($('editSaleDuePreview'))$('editSaleDuePreview').value=Math.max(0,total-paid).toFixed(2)}
+window.closeSaleEditor=()=>{$('saleEditor').classList.add('hidden');editingSaleId=null};
+window.saveSaleEdit=async id=>{
+  if(salePaymentSaving.has(id))return;
+  let sale=sales.find(x=>x.id===id);if(!sale)return;
+  let rows=[...$('editSaleLines').querySelectorAll('[data-edit-item]')],desired=[];
+  try{
+    for(let row of rows){
+      let pid=row.querySelector('[data-edit-product]').value,p=products.find(x=>x.id===pid),qty=Number(row.querySelector('[data-edit-qty]').value),rate=Number(row.querySelector('[data-edit-rate]').value),old=saleItems.find(x=>x.id===row.dataset.editItem),returned=Number(old?.returned_quantity||0);
+      if(!p||!Number.isInteger(qty)||qty<Math.max(1,returned)||!Number.isFinite(rate)||rate<0)throw Error('Product, quantity ya rate check karein.');
+      desired.push({old,p,product_id:pid,product_name:p.name,quantity:qty,unit_rate:rate,dealer_rate:rate,rate_type:sale.rate_type||'dealer',purchase_rate:Number(p.purchase_rate||0),line_total:qty*rate,user_id:user.id,sale_id:id,returned_quantity:returned});
+    }
+    if(!desired.length)throw Error('Bill mein kam az kam aik product hona zaroori hai.');
+    let subtotal=desired.reduce((a,x)=>a+Math.max(0,x.quantity-x.returned_quantity)*x.unit_rate,0),discount=Math.max(0,Number($('editSaleDiscount').value||0));
+    if(discount>subtotal)throw Error('Discount subtotal se zyada nahi ho sakta.');
+    let total=subtotal-discount,paid=Math.max(0,Number($('editSalePaidAmount').value||0));
+    if(paid>total)throw Error('Paid amount net total se zyada nahi ho sakta.');
+    let due=total-paid;
+    salePaymentSaving.add(id);
+    let stockDeltas={};
+    for(let old of saleItems.filter(x=>x.sale_id===id)){if(old.product_id)stockDeltas[old.product_id]=(stockDeltas[old.product_id]||0)+Math.max(0,Number(old.quantity||0)-Number(old.returned_quantity||0))}
+    for(let d of desired){if(d.old&&Number(d.old.returned_quantity||0)>0&&d.old.product_id!==d.product_id)throw Error('Returned item ka product change nahi kar sakte.');stockDeltas[d.product_id]=(stockDeltas[d.product_id]||0)-Math.max(0,d.quantity-d.returned_quantity)}
+    for(let [pid,delta] of Object.entries(stockDeltas)){if(!delta)continue;let prod=products.find(x=>x.id===pid);if(!prod)continue;let next=Number(prod.stock_qty||0)+delta;if(next<0)throw Error(`Stock kam hai: ${prod.name}`);let ur=await sb.from('products').update({stock_qty:next}).eq('id',pid);if(ur.error)throw ur.error}
+    for(let old of saleItems.filter(x=>x.sale_id===id)){if(!desired.some(d=>d.old?.id===old.id)){let del=await sb.from('sale_items').delete().eq('id',old.id);if(del.error)throw del.error}}
+    for(let d of desired){let payload={user_id:user.id,sale_id:id,product_id:d.product_id,product_name:d.product_name,quantity:d.quantity,unit_rate:d.unit_rate,dealer_rate:d.dealer_rate,rate_type:d.rate_type,purchase_rate:d.purchase_rate,line_total:d.line_total,returned_quantity:d.returned_quantity};let res=d.old?await sb.from('sale_items').update(payload).eq('id',d.old.id):await sb.from('sale_items').insert(payload);if(res.error)throw res.error}
+    let upd=await sb.from('sales').update({total,discount,paid,due}).eq('id',id);if(upd.error)throw upd.error;
+    await loadAll();closeSaleEditor();msg('globalMsg',`Bill updated. Total ${money(total)}, Paid ${money(paid)}, Due ${money(due)}.`);
+  }catch(e){msg('globalMsg','Bill edit error: '+e.message,false)}finally{salePaymentSaving.delete(id)}
+};
+
+window.showCustomerBills=id=>{
+  let c=customers.find(x=>x.id===id);if(!c)return;
+  let list=sales.filter(s=>saleBelongsToCustomer(s,c));
+  let cPays=paymentsData.filter(p=>p.customer_id===c.id||(!p.customer_id&&norm(p.customer_name)===norm(c.name)));
+  setTab('history');
+  let panel=$('customerBillDetails');panel.classList.remove('hidden');
+  let payHtml=`<div class="subpanel"><h3>Received Payments History (${cPays.length})</h3>${cPays.length?`<div class="tablewrap"><table><thead><tr><th>Date</th><th>Amount Received</th><th>Note</th></tr></thead><tbody>${cPays.map(p=>`<tr><td>${new Date(p.created_at).toLocaleString()}</td><td class="good"><b>${money(p.amount)}</b></td><td>${esc(p.note||'Udhaar payment')}</td></tr>`).join('')}</tbody></table></div>`:'<p class="mini">Abhi tak koi alag payment receive record nahi hui.</p>'}</div>`;
+  panel.innerHTML=`<div class="actions" style="justify-content:space-between"><h3>${esc(c.name)} — Account Summary (Udhaar: ${money(customerDue(c))} · Credit: ${money(c.credit_balance||0)})</h3><button class="secondary" onclick="$('customerBillDetails').classList.add('hidden')">Close</button></div>${payHtml}${list.length?list.map(s=>{let items=saleItems.filter(x=>x.sale_id===s.id);return `<div class="subpanel"><b>${esc(s.invoice_no)}</b> · ${new Date(s.created_at).toLocaleString()}<br><span class="mini">${money(s.total)} · Paid ${money(s.paid)} · Due ${money(s.due)} · ${Number(s.due)>0?'Udhaar':'Paid / Net payment'}</span><div class="tablewrap"><table><thead><tr><th>Product</th><th>Qty</th><th>Returned</th><th>Kept</th><th>Rate</th></tr></thead><tbody>${items.map(x=>`<tr><td>${esc(x.product_name)}</td><td>${x.quantity}</td><td>${Number(x.returned_quantity||0)}</td><td>${Math.max(0,Number(x.quantity||0)-Number(x.returned_quantity||0))}</td><td>${money(x.unit_rate??x.dealer_rate)}</td></tr>`).join('')}</tbody></table></div></div>`}).join(''):'<p>Is customer ka koi bill nahi mila.</p>'}`;
+  panel.scrollIntoView({behavior:'smooth',block:'start'});
+};
+
+// RETURNS SECTION: Customer khud likhein + Product khud likhein + Cash Refund vs Udhaar Cut vs Credit Add
+function renderReturnPicker(){
+  let box=$('returnPickerList');
+  let q=$('returnProductInput').value.trim();
+  if(!q){box.innerHTML='';return}
+  let sid=$('returnSale').value;
+  let saleList=sid?saleItems.filter(x=>x.sale_id===sid && Number(x.quantity||0)>Number(x.returned_quantity||0)):[];
+  let matches=sortProductsBySearch(products.filter(p=>productMatches(p,q)),q).slice(0,15);
+  if(!matches.length){
+    box.innerHTML='<div style="padding:10px 12px" class="muted">List mein nahi mila — aap khud naam likh kar bhi return save kar sakte hain.</div>';
+    return;
+  }
+  box.innerHTML=matches.map(p=>{
+    let si=saleList.find(x=>x.product_id===p.id);
+    let rate=si?Number(si.unit_rate??si.dealer_rate??p.dealer_rate):Number(p.dealer_rate||p.retail_rate||0);
+    return `<button type="button" data-ret-pid="${p.id}" data-ret-si="${si?si.id:''}" data-ret-rate="${rate}">
+      <strong>${esc(p.name)}</strong> — <span class="good">${money(rate)}</span>
+      <span class="mini"> (Current Stock: ${p.stock_qty} · Rack: ${esc(p.rack_no||'-')})</span>
+    </button>`;
+  }).join('');
+}
+
+$('returnProductInput').addEventListener('input',()=>{
+  selectedReturnProductId=null;
+  selectedReturnSaleItemId=null;
+  renderReturnPicker();
+  recalcReturnDefaults(true);
+});
+$('returnPickerList').addEventListener('click',e=>{
+  let btn=e.target.closest('[data-ret-pid]');
+  if(!btn)return;
+  let p=products.find(x=>x.id===btn.dataset.retPid);
+  if(!p)return;
+  selectedReturnProductId=p.id;
+  selectedReturnSaleItemId=btn.dataset.retSi||null;
+  $('returnProductInput').value=p.name;
+  $('returnRate').value=Number(btn.dataset.retRate||p.dealer_rate||0);
+  $('returnPickerList').innerHTML='';
+  recalcReturnDefaults(true);
+});
+
+$('returnCustomerInput').addEventListener('input',()=>{
+  populateReturnBillsForCustomer();
+  recalcReturnDefaults(true);
+});
+
+function populateReturnBillsForCustomer(){
+  let sel=$('returnSale');
+  let cname=norm($('returnCustomerInput').value);
+  let c=findCustomerByName($('returnCustomerInput').value);
+  let balEl=$('returnCustBal');
+  if(c){
+    balEl.innerHTML=`Udhaar (Due): <b class="bad">${money(customerDue(c))}</b> · Credit: <b class="good">${money(c.credit_balance||0)}</b>`;
+  }else{
+    balEl.textContent=cname?'Naya / Walk-in customer':'';
+  }
+  let filteredSales=cname?sales.filter(s=>norm(s.customer_name||s.customers?.name||'').includes(cname)):sales;
+  let prev=sel.value;
+  sel.innerHTML='<option value="">Direct return (bina bill select kiye)</option>'+filteredSales.map(s=>`<option value="${s.id}">${esc(s.invoice_no)} — ${esc(s.customer_name||s.customers?.name||'Walk-in')} (Total ${money(s.total)} · Paid ${money(s.paid)} · Due ${money(s.due)})</option>`).join('');
+  if(filteredSales.some(s=>s.id===prev))sel.value=prev;
+}
+
+$('returnSale').addEventListener('change',()=>{
+  let sid=$('returnSale').value;
+  let s=sales.find(x=>x.id===sid);
+  if(s){
+    if(!$('returnCustomerInput').value.trim() && (s.customer_name||s.customers?.name)){
+      $('returnCustomerInput').value=s.customer_name||s.customers?.name||'';
+    }
+    let items=saleItems.filter(x=>x.sale_id===sid && Number(x.quantity||0)>Number(x.returned_quantity||0));
+    if(items.length===1){
+      let it=items[0];
+      selectedReturnProductId=it.product_id||null;
+      selectedReturnSaleItemId=it.id;
+      $('returnProductInput').value=it.product_name||'';
+      $('returnRate').value=Number(it.unit_rate??it.dealer_rate??0);
+      $('returnQty').value=Math.max(1,Number(it.quantity||1)-Number(it.returned_quantity||0));
+    }
+  }
+  recalcReturnDefaults(true);
+});
+
+function recalcReturnDefaults(autoSplit=false){
+  let qty=Math.max(1,Number($('returnQty').value||1));
+  let rate=Math.max(0,Number($('returnRate').value||0));
+  let total=Number((qty*rate).toFixed(2));
+  $('returnTotalAmt').value=total;
+
+  if(autoSplit){
+    let sid=$('returnSale').value;
+    let s=sales.find(x=>x.id===sid);
+    let c=findCustomerByName($('returnCustomerInput').value);
+    let dueAvail=s?Number(s.due||0):(c?customerDue(c):0);
+    // Pehle udhaar se cut, baqi default cash refund (credit 0 jab tak user khud credit na likhe)
+    let cutDue=Math.min(dueAvail,total);
+    let cashRef=Number((total-cutDue).toFixed(2));
+    $('returnDueCut').value=cutDue;
+    $('returnCashRefund').value=cashRef;
+    $('returnCreditAdd').value=0;
+  }
+
+  let cash=Number($('returnCashRefund').value||0);
+  let cut=Number($('returnDueCut').value||0);
+  let cred=Number($('returnCreditAdd').value||0);
+  $('returnPreview').innerHTML=`Total Return: <b>${money(total)}</b> &rarr; Cash Wapas: <b>${money(cash)}</b> | Udhaar se Cut: <b>${money(cut)}</b> | Credit mein Jama: <b>${money(cred)}</b>`;
+}
+
+$('returnQty').addEventListener('input',()=>recalcReturnDefaults(true));
+$('returnRate').addEventListener('input',()=>recalcReturnDefaults(true));
+$('returnCashRefund').addEventListener('input',()=>recalcReturnDefaults(false));
+$('returnDueCut').addEventListener('input',()=>recalcReturnDefaults(false));
+$('returnCreditAdd').addEventListener('input',()=>recalcReturnDefaults(false));
+
+function renderReturnSection(){
+  populateReturnBillsForCustomer();
+  $('returnRows').innerHTML=returnsData.map(r=>{
+    let ri=returnItemsData.filter(x=>x.return_id===r.id);
+    if(!ri.length){
+      return `<tr>
+        <td>${new Date(r.created_at).toLocaleString()}</td>
+        <td>${esc(r.invoice_no||'-')}</td>
+        <td>${esc(r.customer_name||'-')}</td>
+        <td>Return</td>
+        <td>-</td>
+        <td>${money(r.total_amount)}</td>
+        <td>-</td>
+        <td><button class="danger" onclick="deleteReturn('${r.id}')">Delete</button></td>
+      </tr>`;
+    }
+    return ri.map((x,idx)=>`<tr>
+      <td>${new Date(r.created_at).toLocaleString()}</td>
+      <td>${esc(r.invoice_no||'-')}</td>
+      <td>${esc(r.customer_name||'-')}</td>
+      <td>${esc(x.product_name)}</td>
+      <td>${x.quantity}</td>
+      <td>${money(x.line_total)}</td>
+      <td><span class="mini">Cash: ${money(r.cash_refunded||0)} · Due Cut: ${money(r.due_adjusted||0)} · Credit: ${money(r.credit_added||0)}</span></td>
+      <td>${idx===0?`<button class="danger" onclick="deleteReturn('${r.id}')">Delete</button>`:''}</td>
+    </tr>`).join('');
+  }).join('')||'<tr><td colspan="8">No returns yet.</td></tr>';
+}
+
+$('saveReturn').onclick=async()=>{
+  let cname=titleWords($('returnCustomerInput').value);
+  let pname=titleWords($('returnProductInput').value);
+  let sid=$('returnSale').value||null;
+  let qty=Number($('returnQty').value);
+  let rate=Number($('returnRate').value);
+  let cashRefund=Math.max(0,Number($('returnCashRefund').value||0));
+  let dueCut=Math.max(0,Number($('returnDueCut').value||0));
+  let creditAdd=Math.max(0,Number($('returnCreditAdd').value||0));
+
+  if(!pname)return msg('globalMsg','Return hone wale product ka naam likhein.',false);
+  if(!Number.isInteger(qty)||qty<1)return msg('globalMsg','Return quantity kam az kam 1 honi chahiye.',false);
+  if(!Number.isFinite(rate)||rate<0)return msg('globalMsg','Valid rate enter karein.',false);
+
+  let amount=Number((qty*rate).toFixed(2));
+  if(Math.abs((cashRefund+dueCut+creditAdd)-amount)>0.5){
+    return msg('globalMsg',`Cash Wapas (${money(cashRefund)}) + Udhaar Cut (${money(dueCut)}) + Credit Jama (${money(creditAdd)}) ka total Return Amount (${money(amount)}) ke barabar hona chahiye.`,false);
+  }
+
+  let sale=sid?sales.find(x=>x.id===sid):null;
+  let product=selectedReturnProductId?products.find(p=>p.id===selectedReturnProductId):products.find(p=>norm(p.name)===norm(pname));
+  let saleItem=selectedReturnSaleItemId?saleItems.find(x=>x.id===selectedReturnSaleItemId):(sale&&product?saleItems.find(x=>x.sale_id===sale.id&&x.product_id===product.id):null);
+
+  if(saleItem){
+    let rem=Number(saleItem.quantity||0)-Number(saleItem.returned_quantity||0);
+    if(qty>rem)return msg('globalMsg',`Is bill mein is item ki sirf ${rem} quantity return ke liye baqi hai.`,false);
+  }
+
+  if(!confirm(`${qty} PCS "${pname}" return save karna hai?\nTotal: ${money(amount)}\nCash Wapas: ${money(cashRefund)} | Udhaar Cut: ${money(dueCut)} | Credit Jama: ${money(creditAdd)}`))return;
+
+  let btn=$('saveReturn');btn.disabled=true;btn.textContent='Saving...';
+  try{
+    let c=findCustomerByName(cname)||(sale?.customer_id?customers.find(x=>x.id===sale.customer_id):null);
+    if(!c && cname && (dueCut>0 || creditAdd>0)){
+      let made=await sb.from('customers').insert({user_id:user.id,name:cname,phone:null,address:null,opening_balance:0,credit_balance:0}).select().single();
+      if(made.error)throw made.error;
+      c=made.data;
+      customers.push(c);
+    }
+
+    let retPayload={
+      user_id:user.id,
+      sale_id:sale?sale.id:null,
+      customer_id:c?.id||null,
+      customer_name:cname||sale?.customer_name||c?.name||'Walk-in',
+      invoice_no:sale?.invoice_no||'DIRECT-RET',
+      total_amount:amount,
+      cash_refunded:cashRefund,
+      due_adjusted:dueCut,
+      credit_added:creditAdd
+    };
+
+    let ret=await sb.from('sales_returns').insert(retPayload).select().single();
+    if(ret.error)throw ret.error;
+
+    let ri=await sb.from('sales_return_items').insert({
+      user_id:user.id,
+      return_id:ret.data.id,
+      sale_item_id:saleItem?.id||null,
+      product_id:product?.id||null,
+      product_name:product?.name||pname,
+      quantity:qty,
+      unit_rate:rate,
+      line_total:amount
+    });
+    if(ri.error)throw ri.error;
+
+    // Update sale_item returned_quantity if linked to a bill
+    if(saleItem){
+      let updItem=await sb.from('sale_items').update({returned_quantity:Number(saleItem.returned_quantity||0)+qty}).eq('id',saleItem.id);
+      if(updItem.error)throw updItem.error;
+    }
+
+    // Update linked sale total/due if bill was selected
+    if(sale){
+      let newTotal=Math.max(0,Number((Number(sale.total||0)-amount).toFixed(2)));
+      let newDue=Math.max(0,Number((Number(sale.due||0)-dueCut).toFixed(2)));
+      let newPaid=Math.max(0,Number((newTotal-newDue).toFixed(2)));
+      let updSale=await sb.from('sales').update({total:newTotal,paid:newPaid,due:newDue}).eq('id',sale.id);
+      if(updSale.error)throw updSale.error;
+    }else if(c && dueCut>0){
+      // Direct return without bill: cut from customer's due (opening balance first, then oldest due bills)
+      let leftCut=dueCut;
+      let op=Number(c.opening_balance||0);
+      if(op>0){
+        let opCut=Math.min(op,leftCut);
+        await sb.from('customers').update({opening_balance:Number((op-opCut).toFixed(2))}).eq('id',c.id);
+        leftCut=Number((leftCut-opCut).toFixed(2));
+      }
+      let dueSales=sales.filter(x=>saleBelongsToCustomer(x,c)&&Number(x.due||0)>0).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+      for(let ds of dueSales){
+        if(leftCut<=0)break;
+        let sDue=Number(ds.due||0);
+        let cut=Math.min(sDue,leftCut);
+        await sb.from('sales').update({paid:Number(ds.paid||0)+cut,due:Number((sDue-cut).toFixed(2))}).eq('id',ds.id);
+        leftCut=Number((leftCut-cut).toFixed(2));
+      }
+    }
+
+    // Add ONLY explicit creditAdd to customer's credit_balance (never automatic cash refund!)
+    if(c && creditAdd>0){
+      let fresh=await sb.from('customers').select('credit_balance').eq('id',c.id).single();
+      let curCred=Number(fresh.data?.credit_balance??c.credit_balance??0);
+      let cr=await sb.from('customers').update({credit_balance:Number((curCred+creditAdd).toFixed(2))}).eq('id',c.id);
+      if(cr.error)throw cr.error;
+    }
+
+    // Add returned stock to product inventory
+    if(product){
+      let stock=await sb.from('products').update({stock_qty:Number(product.stock_qty||0)+qty}).eq('id',product.id);
+      if(stock.error)throw stock.error;
+    }
+
+    selectedReturnProductId=null;selectedReturnSaleItemId=null;
+    $('returnProductInput').value='';$('returnQty').value=1;$('returnRate').value=0;
+    $('returnCashRefund').value=0;$('returnDueCut').value=0;$('returnCreditAdd').value=0;$('returnTotalAmt').value=0;
+    await loadAll();
+    msg('globalMsg',`Return saved! ${qty} PCS stock mein add ho gaye. Cash Wapas: ${money(cashRefund)}, Udhaar Cut: ${money(dueCut)}, Credit Jama: ${money(creditAdd)}.`);
+  }catch(e){msg('globalMsg','Return save error: '+e.message,false)}finally{btn.disabled=false;btn.textContent='Save Return'}
+};
+
+// Delete Return History WITHOUT deducting stock (stock stays in inventory until sold)
+window.deleteReturn=async id=>{
+  let r=returnsData.find(x=>x.id===id);if(!r)return;
+  if(!confirm(`Return record (${r.customer_name||''} - ${money(r.total_amount)}) delete karna hai?\n\nNote: Jo maal stock mein wapas add ho chuka hai wo stock mein hi rahega (kam nahi hoga) jab tak sale na ho.`))return;
+  try{
+    let delItems=await sb.from('sales_return_items').delete().eq('return_id',id);
+    if(delItems.error)throw delItems.error;
+    let del=await sb.from('sales_returns').delete().eq('id',id);
+    if(del.error)throw del.error;
+    await loadAll();
+    msg('globalMsg','Return history record delete ho gaya. Product stock mein koi kami nahi ki gayi.');
+  }catch(e){msg('globalMsg','Return delete error: '+e.message,false)}
+};
+
+function printInvoice(s,cname,items){
+  let lines=cart.length?cart:items;
+  let subtotal=lines.reduce((a,x)=>a+Number(x.qty||x.quantity||0)*Number(x.rate??x.unit_rate??x.dealer_rate??0),0),discount=Number(s.discount||0);
+  let htmlBill=`<html><head><title>${esc(s.invoice_no)}</title><style>body{font:14px Arial;padding:25px}table{width:100%;border-collapse:collapse;margin-top:20px}td,th{padding:9px;border-bottom:1px solid #ddd;text-align:left}.right{text-align:right}</style></head><body><h2>Bike Parts Shop</h2><p>Dealer Invoice: ${esc(s.invoice_no)}<br>Date: ${new Date(s.created_at||Date.now()).toLocaleString()}<br>Customer: ${esc(cname)}</p><table><tr><th>Product</th><th>Qty</th><th>${s.rate_type==='retail'?'Retail Rate':'Dealer Rate'}</th><th>Total</th></tr>${lines.map(x=>`<tr><td>${esc(x.name||x.product_name)}</td><td>${x.qty||x.quantity}</td><td>${money(x.rate??x.unit_rate??x.dealer_rate)}</td><td>${money((x.qty||x.quantity)*(x.rate??x.unit_rate??x.dealer_rate))}</td></tr>`).join('')}</table><p>Subtotal: ${money(subtotal)}<br>Discount: ${money(discount)}</p><h3>Net Total: ${money(s.total)}</h3><p>Paid: ${money(s.paid)}<br>Remaining: ${money(s.due)}</p><p>Thank you</p><script>window.print()<\/script></body></html>`;
+  let w=window.open('','_blank');if(!w){msg('globalMsg','Print popup blocked. Allow popups, then print from Sales History.',false);return}w.document.write(htmlBill);w.document.close();
+}
+window.printSale=async id=>{let s=sales.find(x=>x.id===id);if(!s)return;let {data,error}=await sb.from('sale_items').select('*').eq('sale_id',id);if(error)return msg('globalMsg',error.message,false);let c=customers.find(x=>x.id===s.customer_id);printInvoice(s,s.customer_name||c?.name||'',data)};
+
+// Delete Sale from Sales History: does NOT delete customer account or wipe their other udhaar/payments
+window.deleteSale=async id=>{
+  let s=sales.find(x=>x.id===id);if(!s)return;
+  let ok=confirm(`Invoice ${s.invoice_no} (${s.customer_name||'Walk-in'}) ko Sales History se delete karna hai?\n\nCustomer ka account aur baqi udhaar/payments safe rahengi.`);
+  if(!ok)return;
+  try{
+    // Detach any return records so return history stays intact
+    await sb.from('sales_returns').update({sale_id:null}).eq('sale_id',id);
+    let {data:items,error:itemError}=await sb.from('sale_items').select('*').eq('sale_id',id);
+    if(itemError)throw itemError;
+    for(const item of (items||[])){
+      if(!item.product_id)continue;
+      let product=products.find(p=>p.id===item.product_id);
+      if(!product)continue;
+      let restored=Number(product.stock_qty||0)+Math.max(0,Number(item.quantity||0)-Number(item.returned_quantity||0));
+      let upd=await sb.from('products').update({stock_qty:restored}).eq('id',item.product_id);
+      if(upd.error)throw upd.error;
+    }
+    let del=await sb.from('sales').delete().eq('id',id);
+    if(del.error)throw del.error;
+    await loadAll();
+    msg('globalMsg',`Invoice ${s.invoice_no} history se delete ho gaya. Customer account aur baqi udhaar/payments mehfooz hain.`);
+  }catch(e){msg('globalMsg','Delete failed: '+e.message,false)}
+};
+
+(async()=>{let u=localStorage.getItem('bpm_url'),k=localStorage.getItem('bpm_key');if(u&&k){$('supUrl').value=u;$('supKey').value=k;sb=client();$('setup').classList.add('hidden');$('auth').classList.remove('hidden');$('setupMsg').textContent='Saved project details loaded. Log in to sync your data.';let {data}=await sb.auth.getSession();if(data.session){user=data.session.user;await boot()}}else{$('setup').classList.remove('hidden');$('auth').classList.remove('hidden')}})();
+</script></body></html>
