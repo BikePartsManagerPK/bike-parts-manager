@@ -1,0 +1,14 @@
+{
+  "name": "Pakistan Auto Parts And Oil Trader",
+  "short_name": "Pakistan Auto Parts",
+  "description": "Shop management app for Pakistan Auto Parts And Oil Trader",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f6fa",
+  "theme_color": "#10243a",
+  "icons": [
+    {"src":"./app-icon.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"./app-icon.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
+}
