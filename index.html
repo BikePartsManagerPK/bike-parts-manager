@@ -23,567 +23,605 @@ nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;padding:8px;background:#
 .picker-list:empty{display:none}
 .picker-list button{display:block;width:100%;text-align:left;background:white;color:#18324d;border-radius:0;border-bottom:1px solid var(--line);padding:10px 12px;font-weight:500}
 .picker-list button:hover,.picker-list button.active{background:#eaf3fb;transform:none}
-.bill-head{display:flex;justify-content:space-between}.inline-edit{min-width:85px;padding:7px 8px;font-size:13px}.inline-edit.name{min-width:150px}.print-only{display:none}
+.inline-edit{min-width:85px;padding:7px 8px;font-size:13px}.inline-edit.name{min-width:150px}
 @media(max-width:650px){header{padding:13px 15px}main{padding:0 10px;margin:14px auto}.card{padding:15px}.hero-search{display:block}.hero-search button{width:100%;margin-top:8px}nav{gap:4px}nav button{padding:9px 10px;font-size:13px}.userbar{font-size:11px}}
-@media print{body{background:white}header,nav,.no-print,.hide-print{display:none!important}main{margin:0;max-width:none}.card{border:0;box-shadow:none}.print-only{display:block!important}}
-.subpanel{border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:14px;background:#fbfdff}.subpanel h3{margin:0 0 12px}.subpanel .row{margin:8px 0}.mini{font-size:12px;color:var(--muted)}.return-tag{display:inline-block;background:#fff3d6;color:#805500;padding:3px 7px;border-radius:6px;font-size:12px}
+@media print{body{background:white}header,nav,.no-print,.hide-print{display:none!important}main{margin:0;max-width:none}.card{border:0;box-shadow:none}}
+.subpanel{border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:14px;background:#fbfdff}.subpanel h3{margin:0 0 12px}.subpanel .row{margin:8px 0}.mini{font-size:12px;color:var(--muted)}
 </style></head>
 <body>
 <header>
   <div class="brand"><img class="brand-logo" src="./dashboard-logo.png" alt="Pakistan Auto Parts And Oil Trader logo"><h1 class="brand-title">Pakistan Auto Parts<br>And Oil Trader <small>SHOP MANAGEMENT</small></h1></div>
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-    <span id="netStatusBadge" class="net-pill net-on">Online</span>
-    <button id="syncQueueBtn" class="secondary hidden" style="width:auto;padding:6px 11px;font-size:12px">↻ Sync (0)</button>
+    <span id="netBadge" class="net-pill net-on">Online</span>
     <div id="userbar" class="userbar"></div>
   </div>
 </header>
 <main>
 <section id="setup" class="card">
 <h2>Connect your Supabase project</h2>
-<p class="muted">Enter your Project URL and anon/public key from Supabase → Project Settings → API. Ya offline cache se chalane ke liye <b>Continue Offline</b> dabayein.</p>
-<div class="row"><div class="field"><label>Supabase Project URL</label><input id="supUrl" placeholder="https://xxxxxxxx.supabase.co"></div><div class="field"><label>Anon / Publishable key</label><input id="supKey" placeholder="sb_publishable_... or eyJ..."></div></div>
-<div class="actions" style="margin-top:10px">
-  <button id="connectBtn" type="button">Connect & save on this device</button>
-  <button id="offlineModeBtn" class="secondary" type="button">Continue Offline (Saved Data)</button>
-</div>
-<div id="setupMsg" class="status">First run: paste your project details, then sign up below.</div>
-</section>
-<section id="auth" class="card hidden">
-<h2>Account login / sign up</h2><div class="row"><div class="field"><label>Email</label><input id="email" type="email" autocomplete="email"></div><div class="field"><label>Password (at least 6 characters)</label><input id="password" type="password" autocomplete="current-password"></div></div>
-<div class="actions" style="margin-top:10px">
-  <button id="signup" type="button">Create account</button>
-  <button class="secondary" id="login" type="button">Log in</button>
-  <button class="secondary" id="authOfflineBtn" type="button">Open Offline Mode</button>
-  <button class="secondary" id="logout" type="button">Log out</button>
-</div><div id="authMsg" class="status">Create an account or log in.</div>
-</section>
-<section id="app" class="hidden">
-<nav class="no-print"><button class="active" data-tab="dashboard" type="button">Dashboard</button><button data-tab="products" type="button">Products</button><button data-tab="customers" type="button">Customers</button><button data-tab="sale" type="button">New Bill</button><button data-tab="history" type="button">Sales History</button><button data-tab="returns" type="button">Returns</button><button data-tab="settings" type="button">⚙ Settings</button></nav>
-
-<section id="dashboard" class="card"><h2>Shop Dashboard</h2><p class="muted">Products dhoondein, stock dekhein aur apna kaam jaldi shuru karein.</p><div class="hero-search"><input id="homeSearch" placeholder="Smart search product name or rack number..." autocomplete="off"><button id="homeSearchBtn" type="button">Search</button></div><div id="homeSearchResults" class="search-results"></div><div class="quick no-print"><button data-go="products" type="button"><strong>＋ Add Product</strong><span>Save a new item and its rates</span></button><button data-go="sale" type="button"><strong>▤ Create New Bill</strong><span>Dealer or retail billing</span></button><button data-go="customers" type="button"><strong>♙ Customers</strong><span>Accounts, dues and payments</span></button><button data-go="history" type="button"><strong>▤ Sales History</strong><span>Find and print saved bills</span></button></div><div class="grid"><div class="statbox"><div class="muted">Products</div><div class="stat" id="statProducts">0</div></div><div class="statbox"><div class="muted">Customers</div><div class="stat" id="statCustomers">0</div></div><div class="statbox"><div class="muted">Pending Sync</div><div class="stat" id="statPendingCount">0</div></div></div><p class="muted">Data is stored in your Supabase cloud project and cached locally for offline use.</p></section>
-
-<section id="products" class="card hidden"><h2>Products / مصنوعات</h2><div class="row">
-<div class="field"><label>Product name</label><input id="pName" autocomplete="off"></div><div class="field"><label>Category</label><input id="pCat"></div><div class="field"><label>Rack number</label><input id="pRack" placeholder="# e.g. 12"></div><div class="field"><label>Stock quantity</label><input id="pStock" type="number" min="0"></div><div class="field"><label>Purchase rate</label><input id="pBuy" type="number" min="0"></div><div class="field"><label>Dealer rate</label><input id="pDealer" type="number" min="0"></div><div class="field"><label>Retail rate</label><input id="pRetail" type="number" min="0"></div></div><div class="actions" style="margin:12px 0"><button id="saveProduct" type="button">Save product</button><button class="secondary" id="clearProduct" type="button">Clear</button></div><input id="productSearch" placeholder="Smart search: type product name..." autocomplete="off" style="margin-bottom:10px"><div class="tablewrap"><table><thead><tr><th>No.</th><th>Product Name</th><th>Category</th><th>Rack Number</th><th>Stock</th><th>Purchase Rate</th><th>Dealer Rate</th><th>Retail Rate</th><th>Action</th></tr></thead><tbody id="productRows"></tbody></table></div></section>
-
-<section id="customers" class="card hidden"><h2>Customers / دکاندار</h2>
-<div class="row"><div class="field"><label>Customer / shopkeeper name</label><input id="cName" autocomplete="off"></div><div class="field"><label>Phone</label><input id="cPhone" autocomplete="off"></div><div class="field"><label>Address</label><input id="cAddress" autocomplete="off"></div><div class="field"><label>Opening balance (due)</label><input id="cOpening" type="number" value="0"></div><div class="field"><label>Credit balance</label><input id="cCredit" type="number" min="0" value="0"></div></div>
-<div class="actions" style="margin:12px 0"><button id="saveCustomer" type="button">Save customer</button></div>
-<div class="row" style="margin-bottom:10px"><div class="field"><input id="customerSearch" placeholder="Search customer name or phone..." autocomplete="off"></div></div>
-<div id="customerSearchSummary" class="status hidden"></div>
-<div class="tablewrap"><table><thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Balance due</th><th>Credit</th><th>Action</th></tr></thead><tbody id="customerRows"></tbody></table></div>
-</section>
-
-<section id="sale" class="card hidden"><h2>New Bill</h2><div class="row">
-<div class="field"><label>Billing type</label><select id="billType"><option value="dealer">Dealer / دکاندار</option><option value="retail">Retail / عام کسٹمر</option></select></div>
-<div class="field"><label>Customer name (optional — type or select)</label><input id="saleCustomer" list="customerOptions" placeholder="Type customer name or leave blank" autocomplete="off"><datalist id="customerOptions"></datalist><div id="saleCustomerInfo" class="mini" style="margin-top:4px"></div></div>
-<div class="field" style="flex:2;min-width:220px"><label>Find product (name/category/rack)</label><input id="saleSearch" placeholder="Type product name..." autocomplete="off"><div id="salePickerList" class="picker-list"></div></div>
-<div class="field" style="max-width:110px"><label>Quantity</label><input id="saleQty" type="number" min="1" value="1"></div>
-<div class="field" style="max-width:130px"><label> </label><button id="addLine" type="button">Add item</button></div>
-</div>
-<div class="tablewrap" style="margin-top:12px"><table><thead><tr><th>Product</th><th>Qty</th><th>Unit rate</th><th>Total</th><th></th></tr></thead><tbody id="cartRows"></tbody></table></div>
-<div class="row" style="margin-top:12px"><div class="field"><label>Subtotal</label><input id="billSubtotal" readonly value="0"></div><div class="field"><label>Discount (Rs)</label><input id="billDiscount" type="number" min="0" value="0" placeholder="0"></div><div class="field"><label>Net Total</label><input id="billTotal" readonly value="0"></div><div class="field"><label>Paid (Cash)</label><input id="billPaid" type="number" min="0" value="0"></div><div class="field"><label>Remaining (Udhaar)</label><input id="billDue" readonly value="0"></div><div class="field"><label> </label><div class="actions"><button id="saveSale" type="button">Save Bill</button><button id="savePrint" class="secondary" type="button">Save & Print</button></div></div></div>
-</section>
-
-<section id="history" class="card hidden"><h2>Sales history</h2>
-<div class="row" style="margin-bottom:10px"><div class="field"><input id="historySearch" placeholder="Search customer name or product..." autocomplete="off"></div></div>
-<div class="tablewrap"><table><thead><tr><th>Customer</th><th>Net Total</th><th>Discount</th><th>Paid</th><th>Due</th><th>Action</th></tr></thead><tbody id="salesRows"></tbody></table></div><div id="saleEditor" class="subpanel hidden"></div><div id="customerBillDetails" class="subpanel hidden"></div></section>
-
-<section id="returns" class="card hidden"><h2>Product Returns</h2>
+<p class="muted">Project URL aur anon/public key paste karein aur <b>Connect & save on this device</b> dabayen (ya <b>Continue Offline</b> dabayen).</p>
 <div class="row">
-<div class="field"><label>Customer name</label><input id="returnCustomerInput" list="customerOptions" placeholder="Customer ka naam likhein..." autocomplete="off"><div id="returnCustBal" class="mini" style="margin-top:4px"></div></div>
-<div class="field"><label>Original bill / invoice (optional)</label><select id="returnSale"><option value="">Direct return (bina bill select kiye)</option></select></div>
-<div class="field" style="flex:2;min-width:220px"><label>Product name</label><input id="returnProductInput" placeholder="Product ka naam type karein..." autocomplete="off"><div id="returnPickerList" class="picker-list"></div></div>
-<div class="field" style="max-width:110px"><label>Return Qty</label><input id="returnQty" type="number" min="1" value="1"></div>
-<div class="field" style="max-width:130px"><label>Unit Rate (Rs)</label><input id="returnRate" type="number" min="0" step="0.01" value="0"></div>
+  <div class="field"><label>Supabase Project URL</label><input id="supUrl" placeholder="https://xxxxxxxx.supabase.co"></div>
+  <div class="field"><label>Anon / Publishable key</label><input id="supKey" placeholder="sb_publishable_... or eyJ..."></div>
 </div>
-<div class="row" style="margin-top:10px">
-<div class="field"><label>Total Return Amount (Rs)</label><input id="returnTotalAmt" readonly value="0"></div>
-<div class="field"><label>Cash Wapas Diya (Refunded Rs)</label><input id="returnCashRefund" type="number" min="0" value="0"></div>
-<div class="field"><label>Udhaar (Due) se Cut (Rs)</label><input id="returnDueCut" type="number" min="0" value="0"></div>
-<div class="field"><label>Credit mein Jama (Rs)</label><input id="returnCreditAdd" type="number" min="0" value="0"></div>
-<div class="field" style="max-width:160px"><label> </label><button id="saveReturn" type="button">Save Return</button></div>
+<div class="actions" style="margin-top:10px">
+  <button id="connectBtn" type="button" onclick="handleConnect()">Connect & save on this device</button>
+  <button id="offlineBtn" class="secondary" type="button" onclick="handleOffline()">Continue Offline</button>
 </div>
-<div id="returnPreview" class="status">Return details darj karein.</div>
-<h3 style="margin-top:20px">Return History</h3>
-<div class="tablewrap"><table><thead><tr><th>Date</th><th>Invoice</th><th>Customer</th><th>Returned item</th><th>Qty</th><th>Amount</th><th>Settlement</th><th>Action</th></tr></thead><tbody id="returnRows"></tbody></table></div></section>
-
-<section id="settings" class="card hidden"><h2>⚙ Settings / Cloud & Offline</h2><div class="row"><div class="field"><label>Supabase Project URL</label><input id="settingsUrl" placeholder="https://project.supabase.co"></div><div class="field"><label>Anon / Publishable key</label><input id="settingsKey" type="password" placeholder="sb_publishable_..."></div></div><div class="actions" style="margin-top:12px"><button id="saveSettings" type="button">Save connection settings</button><button class="secondary" id="showKey" type="button">Show / hide key</button><button class="secondary" id="settingsSyncNow" type="button">↻ Sync Offline Data Now</button><button class="secondary" id="settingsLogout" type="button">Log out</button></div><div id="settingsMsg" class="status">Connection details are stored on this device.</div><hr style="border:0;border-top:1px solid var(--line);margin:22px 0"><h2>🔒 Private Business Reports</h2><div class="actions"><button id="openPrivateReports" type="button">Open Private Reports</button><button class="secondary" id="changeReportPin" type="button">Set / Change Reports PIN</button></div><div id="privateReports" class="hidden" style="margin-top:16px"><div class="row"><div class="field"><label>From date</label><input id="reportFrom" type="date"></div><div class="field"><label>To date</label><input id="reportTo" type="date"></div><div class="field"><label> </label><button id="refreshReports" type="button">Update Report</button></div></div><div class="grid" style="margin-top:14px"><div class="statbox"><div class="muted">Current stock purchase value</div><div class="stat" id="rStock">Rs 0</div></div><div class="statbox"><div class="muted">Sales in selected dates</div><div class="stat" id="rSales">Rs 0</div></div><div class="statbox"><div class="muted">Market outstanding (total)</div><div class="stat" id="rDue">Rs 0</div></div><div class="statbox"><div class="muted">Customer advance credit</div><div class="stat" id="rCredit">Rs 0</div></div><div class="statbox"><div class="muted">Estimated gross profit</div><div class="stat" id="rProfit">Rs 0</div></div></div></div></section>
+<div id="setupMsg" class="status">Ready. URL aur key enter karein ya Continue Offline dabayen.</div>
 </section>
-<div id="globalMsg" class="status">Connect your project or continue offline.</div>
+
+<section id="auth" class="card hidden">
+<h2>Account login / sign up</h2>
+<div class="row">
+  <div class="field"><label>Email</label><input id="email" type="email" autocomplete="email"></div>
+  <div class="field"><label>Password (at least 6 characters)</label><input id="password" type="password" autocomplete="current-password"></div>
+</div>
+<div class="actions" style="margin-top:10px">
+  <button id="signup" type="button" onclick="handleSignup()">Create account</button>
+  <button class="secondary" id="login" type="button" onclick="handleLogin()">Log in</button>
+  <button class="secondary" type="button" onclick="handleOffline()">Open Offline</button>
+  <button class="secondary" id="logout" type="button" onclick="handleLogout()">Log out</button>
+</div>
+<div id="authMsg" class="status">Create an account or log in.</div>
+</section>
+
+<section id="app" class="hidden">
+<nav class="no-print">
+  <button class="active" data-tab="dashboard" type="button" onclick="setTab('dashboard')">Dashboard</button>
+  <button data-tab="products" type="button" onclick="setTab('products')">Products</button>
+  <button data-tab="customers" type="button" onclick="setTab('customers')">Customers</button>
+  <button data-tab="sale" type="button" onclick="setTab('sale')">New Bill</button>
+  <button data-tab="history" type="button" onclick="setTab('history')">Sales History</button>
+  <button data-tab="returns" type="button" onclick="setTab('returns')">Returns</button>
+  <button data-tab="settings" type="button" onclick="setTab('settings')">⚙ Settings</button>
+</nav>
+
+<section id="dashboard" class="card">
+  <h2>Shop Dashboard</h2>
+  <p class="muted">Products dhoondein, stock dekhein aur apna kaam jaldi shuru karein.</p>
+  <div class="hero-search">
+    <input id="homeSearch" placeholder="Smart search product name or rack number..." autocomplete="off" oninput="runHomeSearch()">
+    <button type="button" onclick="runHomeSearch()">Search</button>
+  </div>
+  <div id="homeSearchResults" class="search-results"></div>
+  <div class="quick no-print">
+    <button type="button" onclick="setTab('products')"><strong>＋ Add Product</strong><span>Save a new item and its rates</span></button>
+    <button type="button" onclick="setTab('sale')"><strong>▤ Create New Bill</strong><span>Dealer or retail billing</span></button>
+    <button type="button" onclick="setTab('customers')"><strong>♙ Customers</strong><span>Accounts, dues and payments</span></button>
+    <button type="button" onclick="setTab('history')"><strong>▤ Sales History</strong><span>Find and print saved bills</span></button>
+  </div>
+  <div class="grid">
+    <div class="statbox"><div class="muted">Products</div><div class="stat" id="statProducts">0</div></div>
+    <div class="statbox"><div class="muted">Customers</div><div class="stat" id="statCustomers">0</div></div>
+  </div>
+  <p class="muted">Data online Supabase aur offline device storage dono mein save hota hai.</p>
+</section>
+
+<section id="products" class="card hidden">
+  <h2>Products / مصنوعات</h2>
+  <div class="row">
+    <div class="field"><label>Product name</label><input id="pName" autocomplete="off"></div>
+    <div class="field"><label>Category</label><input id="pCat"></div>
+    <div class="field"><label>Rack number</label><input id="pRack" placeholder="# e.g. 12"></div>
+    <div class="field"><label>Stock quantity</label><input id="pStock" type="number" min="0"></div>
+    <div class="field"><label>Purchase rate</label><input id="pBuy" type="number" min="0"></div>
+    <div class="field"><label>Dealer rate</label><input id="pDealer" type="number" min="0"></div>
+    <div class="field"><label>Retail rate</label><input id="pRetail" type="number" min="0"></div>
+  </div>
+  <div class="actions" style="margin:12px 0">
+    <button type="button" onclick="saveProduct()">Save product</button>
+    <button class="secondary" type="button" onclick="clearProduct()">Clear</button>
+  </div>
+  <input id="productSearch" placeholder="Search product name..." autocomplete="off" style="margin-bottom:10px" oninput="render()">
+  <div class="tablewrap">
+    <table><thead><tr><th>No.</th><th>Product Name</th><th>Category</th><th>Rack Number</th><th>Stock</th><th>Purchase Rate</th><th>Dealer Rate</th><th>Retail Rate</th><th>Action</th></tr></thead><tbody id="productRows"></tbody></table>
+  </div>
+</section>
+
+<section id="customers" class="card hidden">
+  <h2>Customers / دکاندار</h2>
+  <div class="row">
+    <div class="field"><label>Customer / shopkeeper name</label><input id="cName" autocomplete="off"></div>
+    <div class="field"><label>Phone</label><input id="cPhone" autocomplete="off"></div>
+    <div class="field"><label>Address</label><input id="cAddress" autocomplete="off"></div>
+    <div class="field"><label>Opening balance (due)</label><input id="cOpening" type="number" value="0"></div>
+    <div class="field"><label>Credit balance</label><input id="cCredit" type="number" min="0" value="0"></div>
+  </div>
+  <div class="actions" style="margin:12px 0"><button type="button" onclick="saveCustomer()">Save customer</button></div>
+  <input id="customerSearch" placeholder="Search customer name or phone..." autocomplete="off" style="margin-bottom:10px" oninput="render()">
+  <div class="tablewrap">
+    <table><thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Balance due</th><th>Credit</th><th>Action</th></tr></thead><tbody id="customerRows"></tbody></table>
+  </div>
+</section>
+
+<section id="sale" class="card hidden">
+  <h2>New Bill</h2>
+  <div class="row">
+    <div class="field"><label>Billing type</label><select id="billType"><option value="dealer">Dealer / دکاندار</option><option value="retail">Retail / عام کسٹمر</option></select></div>
+    <div class="field"><label>Customer name (optional)</label><input id="saleCustomer" list="customerOptions" placeholder="Type customer name" autocomplete="off"><datalist id="customerOptions"></datalist></div>
+    <div class="field" style="flex:2;min-width:220px"><label>Find product</label><input id="saleSearch" placeholder="Type product name..." autocomplete="off" oninput="onSaleSearch()"><div id="salePickerList" class="picker-list"></div></div>
+    <div class="field" style="max-width:110px"><label>Quantity</label><input id="saleQty" type="number" min="1" value="1"></div>
+    <div class="field" style="max-width:130px"><label> </label><button type="button" onclick="addLine()">Add item</button></div>
+  </div>
+  <div class="tablewrap" style="margin-top:12px"><table><thead><tr><th>Product</th><th>Qty</th><th>Unit rate</th><th>Total</th><th></th></tr></thead><tbody id="cartRows"></tbody></table></div>
+  <div class="row" style="margin-top:12px">
+    <div class="field"><label>Subtotal</label><input id="billSubtotal" readonly value="0"></div>
+    <div class="field"><label>Discount (Rs)</label><input id="billDiscount" type="number" min="0" value="0" oninput="drawCart()"></div>
+    <div class="field"><label>Net Total</label><input id="billTotal" readonly value="0"></div>
+    <div class="field"><label>Paid (Cash)</label><input id="billPaid" type="number" min="0" value="0" oninput="drawCart()"></div>
+    <div class="field"><label>Remaining (Udhaar)</label><input id="billDue" readonly value="0"></div>
+    <div class="field"><label> </label><div class="actions"><button type="button" onclick="saveBill(false)">Save Bill</button><button class="secondary" type="button" onclick="saveBill(true)">Save & Print</button></div></div>
+  </div>
+</section>
+
+<section id="history" class="card hidden">
+  <h2>Sales history</h2>
+  <input id="historySearch" placeholder="Search customer name or invoice..." autocomplete="off" style="margin-bottom:10px" oninput="render()">
+  <div class="tablewrap"><table><thead><tr><th>Customer</th><th>Net Total</th><th>Discount</th><th>Paid</th><th>Due</th><th>Action</th></tr></thead><tbody id="salesRows"></tbody></table></div>
+</section>
+
+<section id="returns" class="card hidden">
+  <h2>Product Returns</h2>
+  <div class="row">
+    <div class="field"><label>Customer name</label><input id="returnCustomerInput" list="customerOptions" placeholder="Customer ka naam..." autocomplete="off"></div>
+    <div class="field"><label>Product name</label><input id="returnProductInput" placeholder="Product ka naam..." autocomplete="off"></div>
+    <div class="field" style="max-width:110px"><label>Return Qty</label><input id="returnQty" type="number" min="1" value="1"></div>
+    <div class="field" style="max-width:130px"><label>Unit Rate (Rs)</label><input id="returnRate" type="number" min="0" value="0"></div>
+    <div class="field" style="max-width:150px"><label> </label><button type="button" onclick="saveReturn()">Save Return</button></div>
+  </div>
+  <div class="tablewrap" style="margin-top:14px"><table><thead><tr><th>Date</th><th>Invoice</th><th>Customer</th><th>Amount</th></tr></thead><tbody id="returnRows"></tbody></table></div>
+</section>
+
+<section id="settings" class="card hidden">
+  <h2>⚙ Settings</h2>
+  <div class="row">
+    <div class="field"><label>Supabase Project URL</label><input id="settingsUrl"></div>
+    <div class="field"><label>Anon / Publishable key</label><input id="settingsKey" type="password"></div>
+  </div>
+  <div class="actions" style="margin-top:12px">
+    <button type="button" onclick="saveSettings()">Save settings</button>
+    <button class="secondary" type="button" onclick="syncToCloud()">Sync to Cloud</button>
+    <button class="secondary" type="button" onclick="handleLogout()">Log out</button>
+  </div>
+  <div id="settingsMsg" class="status">Ready.</div>
+</section>
+</section>
+<div id="globalMsg" class="status">Page ready.</div>
 </main>
+
 <script>
-let sb = null, user = null, offlineOnly = false;
-let products = [], customers = [], sales = [], saleItems = [], returnsData = [], returnItemsData = [], paymentsData = [], cart = [];
-let editingProduct = null, editingCustomer = null, editingSaleId = null;
-let selectedSaleProductId = null, selectedReturnProductId = null, selectedReturnSaleItemId = null;
+window.onerror = function(m){ setMsg('setupMsg', 'Error: ' + m, false); setMsg('globalMsg', 'Error: ' + m, false); };
 
-const $ = id => document.getElementById(id);
-const money = n => 'Rs ' + Number(n || 0).toLocaleString('en-PK', { maximumFractionDigits: 2 });
-const uid = () => 'loc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
-const titleWords = v => String(v ?? '').trim();
-const rackFormat = v => { let x = String(v || '').trim(); return x && !x.startsWith('#') ? '#' + x : x; };
-const norm = s => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": ''' }[c]));
-const msg = (id, s, ok = true) => { let el = $(id); if (!el) return; el.textContent = s; el.className = 'status ' + (ok ? 'good' : 'bad'); };
+var sb = null, user = null, isOffline = false;
+var products = [], customers = [], sales = [], saleItems = [], returnsData = [], cart = [], selectedProdId = null;
 
-function readSnapshot() {
-  try {
-    return JSON.parse(localStorage.getItem('bpm_snap_v2') || 'null') || {
-      products: [], customers: [], sales: [], saleItems: [], returnsData: [], returnItemsData: [], paymentsData: []
-    };
-  } catch {
-    return { products: [], customers: [], sales: [], saleItems: [], returnsData: [], returnItemsData: [], paymentsData: [] };
-  }
+function $(id){ return document.getElementById(id); }
+function money(n){ return 'Rs ' + Number(n || 0).toLocaleString('en-PK', { maximumFractionDigits: 2 }); }
+function norm(s){ return String(s || '').toLowerCase().trim(); }
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, function(c){ return ({'&':'&','<':'<','>':'>','"':'"',"'":'''})[c]; }); }
+function setMsg(id, text, ok){
+  if(ok === undefined) ok = true;
+  var el = $(id);
+  if(!el) return;
+  el.textContent = text;
+  el.className = 'status ' + (ok ? 'good' : 'bad');
 }
-function writeSnapshot() {
-  localStorage.setItem('bpm_snap_v2', JSON.stringify({
-    products, customers, sales, saleItems, returnsData, returnItemsData, paymentsData
-  }));
+
+function saveLocal(){
+  try{
+    localStorage.setItem('pap_local_v3', JSON.stringify({
+      products: products, customers: customers, sales: sales, saleItems: saleItems, returnsData: returnsData
+    }));
+  }catch(e){}
 }
-function loadFromSnapshot() {
-  let d = readSnapshot();
-  products = d.products || []; customers = d.customers || []; sales = d.sales || [];
-  saleItems = d.saleItems || []; returnsData = d.returnsData || []; returnItemsData = d.returnItemsData || [];
-  paymentsData = d.paymentsData || [];
+function loadLocal(){
+  try{
+    var d = JSON.parse(localStorage.getItem('pap_local_v3') || 'null');
+    if(!d) return false;
+    products = d.products || [];
+    customers = d.customers || [];
+    sales = d.sales || [];
+    saleItems = d.saleItems || [];
+    returnsData = d.returnsData || [];
+    return true;
+  }catch(e){ return false; }
 }
-function getQueue() {
-  try { return JSON.parse(localStorage.getItem('bpm_queue_v2') || '[]'); } catch { return []; }
-}
-function pushQueue(item) {
-  let q = getQueue();
-  q.push(item);
-  localStorage.setItem('bpm_queue_v2', JSON.stringify(q));
-  updateNetUI();
-}
-function updateNetUI() {
-  let online = navigator.onLine && !offlineOnly;
-  let badge = $('netStatusBadge');
-  if (badge) {
-    badge.textContent = navigator.onLine ? (offlineOnly ? 'Offline Mode' : 'Online') : 'Offline';
-    badge.className = 'net-pill ' + (navigator.onLine ? 'net-on' : 'net-off');
-  }
-  let qLen = getQueue().length;
-  if ($('statPendingCount')) $('statPendingCount').textContent = qLen;
-  if ($('syncQueueBtn')) {
-    $('syncQueueBtn').textContent = `↻ Sync (${qLen})`;
-    $('syncQueueBtn').classList.toggle('hidden', qLen === 0);
+
+function updateNetBadge(){
+  var b = $('netBadge');
+  if(!b) return;
+  if(navigator.onLine && !isOffline){
+    b.textContent = 'Online';
+    b.className = 'net-pill net-on';
+  }else{
+    b.textContent = 'Offline';
+    b.className = 'net-pill net-off';
   }
 }
 
-function makeSbClient() {
-  let u = localStorage.getItem('bpm_url');
-  let k = localStorage.getItem('bpm_key');
-  if (!u || !k || !window.supabase || typeof window.supabase.createClient !== 'function') return null;
+function makeClient(){
+  var u = localStorage.getItem('bpm_url') || ($('supUrl') && $('supUrl').value.trim());
+  var k = localStorage.getItem('bpm_key') || ($('supKey') && $('supKey').value.trim());
+  if(!u || !k) return null;
+  if(!window.supabase || !window.supabase.createClient) return null;
   return window.supabase.createClient(u, k);
 }
 
-async function flushQueue() {
-  let raw = makeSbClient();
-  if (!navigator.onLine || !raw || !user) return;
-  let q = getQueue();
-  if (!q.length) return;
-  let remain = [];
-  for (let op of q) {
-    try {
-      if (op.type === 'insert') {
-        let row = { ...op.row, user_id: user.id };
-        if (String(row.id || '').startsWith('loc_')) delete row.id;
-        let { error } = await raw.from(op.table).insert(row);
-        if (error) throw error;
-      } else if (op.type === 'update' && !String(op.id || '').startsWith('loc_')) {
-        let { error } = await raw.from(op.table).update(op.patch).eq('id', op.id);
-        if (error) throw error;
-      } else if (op.type === 'delete' && !String(op.id || '').startsWith('loc_')) {
-        let { error } = await raw.from(op.table).delete().eq('id', op.id);
-        if (error) throw error;
-      }
-    } catch {
-      remain.push(op);
-    }
-  }
-  localStorage.setItem('bpm_queue_v2', JSON.stringify(remain));
-  updateNetUI();
-  if (!remain.length) {
-    await loadAll();
-    msg('globalMsg', 'Offline data cloud ke sath sync ho gaya!');
-  }
-}
-
-async function addRecord(table, row) {
-  let item = { id: row.id || uid(), created_at: row.created_at || new Date().toISOString(), ...row };
-  if (navigator.onLine && !offlineOnly && sb && user) {
-    try {
-      let { data, error } = await sb.from(table).insert({ ...item, user_id: user.id }).select().single();
-      if (!error && data) return data;
-    } catch {}
-  }
-  pushQueue({ type: 'insert', table, row: item });
-  return item;
-}
-async function updRecord(table, id, patch) {
-  if (navigator.onLine && !offlineOnly && sb && user && !String(id).startsWith('loc_')) {
-    try {
-      let { error } = await sb.from(table).update(patch).eq('id', id);
-      if (!error) return;
-    } catch {}
-  }
-  pushQueue({ type: 'update', table, id, patch });
-}
-async function delRecord(table, id) {
-  if (navigator.onLine && !offlineOnly && sb && user && !String(id).startsWith('loc_')) {
-    try {
-      let { error } = await sb.from(table).delete().eq('id', id);
-      if (!error) return;
-    } catch {}
-  }
-  pushQueue({ type: 'delete', table, id });
-}
-
-function setTab(t) {
-  if (!['dashboard', 'products', 'customers', 'sale', 'history', 'returns', 'settings'].includes(t)) t = 'dashboard';
-  localStorage.setItem('bpm_active_tab', t);
-  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
-  ['dashboard', 'products', 'customers', 'sale', 'history', 'returns', 'settings'].forEach(x => $(x).classList.toggle('hidden', x !== t));
-  if (t === 'settings') {
-    $('settingsUrl').value = localStorage.getItem('bpm_url') || '';
-    $('settingsKey').value = localStorage.getItem('bpm_key') || '';
-  }
-}
-
-function openOfflineApp() {
-  offlineOnly = true;
-  localStorage.setItem('bpm_offline_active', '1');
-  loadFromSnapshot();
-  $('setup').classList.add('hidden');
-  $('auth').classList.add('hidden');
-  $('app').classList.remove('hidden');
-  $('globalMsg').classList.add('hidden');
-  $('userbar').innerHTML = '<span>Offline Mode</span><button id="switchOnlineBtn" type="button" style="width:auto;padding:7px 12px;background:#e8eef5;color:#18324d">Cloud Login</button>';
-  $('switchOnlineBtn').onclick = () => {
-    offlineOnly = false;
-    localStorage.removeItem('bpm_offline_active');
-    $('app').classList.add('hidden');
-    $('setup').classList.remove('hidden');
-    $('auth').classList.remove('hidden');
-    $('globalMsg').classList.remove('hidden');
-  };
-  render();
-  setTab(localStorage.getItem('bpm_active_tab') || 'dashboard');
-  msg('globalMsg', 'Offline Mode chal raha hai — data is device par save ho ga.');
-}
-
-async function bootOnline() {
-  offlineOnly = false;
-  localStorage.removeItem('bpm_offline_active');
-  $('setup').classList.add('hidden');
-  $('auth').classList.add('hidden');
-  $('app').classList.remove('hidden');
-  $('globalMsg').classList.add('hidden');
-  $('userbar').innerHTML = '<span>' + esc(user.email) + '</span><button id="headerLogout" type="button" style="width:auto;padding:7px 12px;background:#e8eef5;color:#18324d">Log out</button>';
-  $('headerLogout').onclick = doLogout;
-  await flushQueue();
-  await loadAll();
-  setTab(localStorage.getItem('bpm_active_tab') || 'dashboard');
-}
-
-async function doLogout() {
-  if (sb && navigator.onLine) { try { await sb.auth.signOut(); } catch {} }
-  user = null;
-  $('app').classList.add('hidden');
-  $('auth').classList.remove('hidden');
-  $('userbar').innerHTML = '';
-  $('globalMsg').classList.remove('hidden');
-  msg('authMsg', 'Logged out.');
-}
-
-async function loadAll() {
-  if (!navigator.onLine || offlineOnly || !sb || !user) {
-    loadFromSnapshot();
-    render();
-    return;
-  }
-  try {
-    let [p, c, s, i, r, ri, pay] = await Promise.all([
-      sb.from('products').select('*').order('name'),
-      sb.from('customers').select('*').order('name'),
-      sb.from('sales').select('*, customers(name)').order('created_at', { ascending: false }),
-      sb.from('sale_items').select('*'),
-      sb.from('sales_returns').select('*').order('created_at', { ascending: false }),
-      sb.from('sales_return_items').select('*'),
-      sb.from('customer_payments').select('*').order('created_at', { ascending: false })
-    ]);
-    for (let x of [p, c, s, i, r, ri]) if (x.error) throw x.error;
-    products = p.data || []; customers = c.data || []; sales = s.data || [];
-    saleItems = i.data || []; returnsData = r.data || []; returnItemsData = ri.data || [];
-    paymentsData = (pay && !pay.error) ? (pay.data || []) : [];
-    writeSnapshot();
-    render();
-  } catch (e) {
-    loadFromSnapshot();
-    render();
-    msg('globalMsg', 'Offline cache se data dikhaya ja raha hai: ' + e.message, true);
-  }
-}
-
-function saleBelongsToCustomer(s, c) {
-  if (!s || !c) return false;
-  if (s.customer_id && s.customer_id === c.id) return true;
-  if (!s.customer_id && norm(s.customer_name) && norm(s.customer_name) === norm(c.name)) return true;
-  return false;
-}
-function customerDue(c) {
-  if (!c) return 0;
-  let open = Number(c.opening_balance || 0);
-  let salesDue = sales.filter(s => saleBelongsToCustomer(s, c)).reduce((a, s) => a + Math.max(0, Number(s.due || 0)), 0);
-  return Math.max(0, Number((open + salesDue).toFixed(2)));
-}
-function findCustomerByName(name) {
-  let n = norm(name);
-  return n ? (customers.find(c => norm(c.name) === n) || null) : null;
-}
-function productMatches(p, q) {
-  let t = norm(q);
-  if (!t) return true;
-  return [norm(p.name), norm(p.category), norm(p.rack_no)].join(' ').includes(t);
-}
-
-function render() {
-  updateNetUI();
-  $('statProducts').textContent = products.length;
-  $('statCustomers').textContent = customers.length;
-
-  let q = $('productSearch').value.trim();
-  let visible = products.filter(p => productMatches(p, q));
-  $('productRows').innerHTML = visible.map((p, idx) => `<tr><td>${idx + 1}</td><td>${esc(p.name)}</td><td>${esc(p.category || '-')}</td><td>${esc(p.rack_no || '-')}</td><td>${p.stock_qty}</td><td>${money(p.purchase_rate)}</td><td>${money(p.dealer_rate)}</td><td>${money(p.retail_rate)}</td><td><button class="danger" type="button" onclick="deleteProduct('${p.id}')">Delete</button></td></tr>`).join('');
-
-  let cq = norm($('customerSearch')?.value || '');
-  $('customerRows').innerHTML = customers.filter(c => !cq || norm(c.name).includes(cq) || norm(c.phone).includes(cq)).map(c => {
-    let due = customerDue(c), credit = Number(c.credit_balance || 0);
-    return `<tr><td><b>${esc(c.name)}</b></td><td>${esc(c.phone || '')}</td><td>${esc(c.address || '')}</td><td class="${due > 0 ? 'bad' : ''}">${money(due)}</td><td class="${credit > 0 ? 'good' : ''}">${money(credit)}</td><td><button class="secondary" type="button" onclick="receivePayment('${c.id}')">Receive Payment</button></td></tr>`;
-  }).join('');
-  $('customerOptions').innerHTML = customers.map(c => `<option value="${esc(c.name)}"></option>`).join('');
-
-  let hq = norm($('historySearch')?.value || '');
-  $('salesRows').innerHTML = sales.filter(s => !hq || norm(s.customer_name || s.customers?.name || '').includes(hq) || norm(s.invoice_no || '').includes(hq)).map(s => {
-    let cname = s.customer_name || s.customers?.name || 'Walk-in';
-    return `<tr><td><b>${esc(cname)}</b></td><td>${money(s.total)}</td><td>${money(s.discount || 0)}</td><td>${money(s.paid)}</td><td class="${Number(s.due || 0) > 0 ? 'bad' : ''}">${money(s.due)}</td><td><div class="actions"><button class="secondary" type="button" onclick="printSale('${s.id}')">Print</button><button class="danger" type="button" onclick="deleteSale('${s.id}')">Delete</button></div></td></tr>`;
-  }).join('');
-
-  $('returnRows').innerHTML = returnsData.map(r => `<tr><td>${new Date(r.created_at).toLocaleString()}</td><td>${esc(r.invoice_no || '-')}</td><td>${esc(r.customer_name || '-')}</td><td>Return</td><td>-</td><td>${money(r.total_amount)}</td><td>Cash: ${money(r.cash_refunded || 0)}</td><td>-</td></tr>`).join('') || '<tr><td colspan="8">No returns yet.</td></tr>';
-}
-
-// Wire buttons & events
-document.querySelectorAll('nav button').forEach(b => b.onclick = () => setTab(b.dataset.tab));
-document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => setTab(b.dataset.go));
-$('offlineModeBtn').onclick = openOfflineApp;
-$('authOfflineBtn').onclick = openOfflineApp;
-$('syncQueueBtn').onclick = flushQueue;
-$('settingsSyncNow').onclick = flushQueue;
-$('logout').onclick = doLogout;
-$('settingsLogout').onclick = doLogout;
-$('showKey').onclick = () => { $('settingsKey').type = $('settingsKey').type === 'password' ? 'text' : 'password'; };
-$('saveSettings').onclick = () => {
-  let u = $('settingsUrl').value.trim(), k = $('settingsKey').value.trim();
-  if (!u.startsWith('https://') || !k) return msg('settingsMsg', 'Valid URL aur Key enter karein.', false);
-  localStorage.setItem('bpm_url', u); localStorage.setItem('bpm_key', k);
-  sb = makeSbClient();
-  msg('settingsMsg', 'Settings save ho gayi.');
-};
-
-$('connectBtn').onclick = () => {
-  let u = $('supUrl').value.trim(), k = $('supKey').value.trim();
-  if (!u.startsWith('https://') || !k) {
-    msg('setupMsg', 'Please enter a valid Project URL and anon/public key.', false);
+function handleConnect(){
+  var u = ($('supUrl').value || '').trim();
+  var k = ($('supKey').value || '').trim();
+  if(!u || u.indexOf('https://') !== 0 || !k){
+    setMsg('setupMsg', 'Please enter a valid Supabase Project URL (https://...) and anon/public key.', false);
     return;
   }
   localStorage.setItem('bpm_url', u);
   localStorage.setItem('bpm_key', k);
-  sb = makeSbClient();
+  sb = makeClient();
   $('auth').classList.remove('hidden');
-  msg('setupMsg', 'Project details saved on this device. Now create an account or log in.');
-};
+  setMsg('setupMsg', 'Saved on this device! Ab neeche Account login / sign up box mein email aur password likh kar Log in ya Create account dabayen.', true);
+  setMsg('authMsg', 'URL aur key save ho gayi. Apni email aur password likh kar Log in karein.', true);
+}
 
-$('signup').onclick = async () => {
-  if (!sb) sb = makeSbClient();
-  if (!sb) return msg('authMsg', 'Pehle Supabase URL aur Key save karein ya Offline Mode kholein.', false);
-  try {
-    let { data, error } = await sb.auth.signUp({ email: $('email').value.trim(), password: $('password').value });
-    if (error) throw error;
-    msg('authMsg', data.session ? 'Account created.' : 'Email check karke verify karein, phir Log in dabayen.');
-  } catch (e) { msg('authMsg', e.message, false); }
-};
-
-$('login').onclick = async () => {
-  if (!sb) sb = makeSbClient();
-  if (!sb) return msg('authMsg', 'Pehle Supabase URL aur Key save karein ya Offline Mode kholein.', false);
-  try {
-    let { data, error } = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('password').value });
-    if (error) throw error;
-    user = data.user;
-    await bootOnline();
-  } catch (e) { msg('authMsg', e.message, false); }
-};
-
-$('productSearch').oninput = render;
-$('customerSearch').oninput = render;
-$('historySearch').oninput = render;
-$('homeSearch').oninput = () => {
-  let q = $('homeSearch').value.trim();
-  if (!q) { $('homeSearchResults').innerHTML = ''; return; }
-  let f = products.filter(p => productMatches(p, q)).slice(0, 10);
-  $('homeSearchResults').innerHTML = f.length ? f.map(p => `<button type="button"><b>${esc(p.name)}</b> — <span class="muted">Stock: ${p.stock_qty} · Dealer: ${money(p.dealer_rate)} · Retail: ${money(p.retail_rate)}</span></button>`).join('') : '<div class="status">No matching product found.</div>';
-};
-
-$('saveProduct').onclick = async () => {
-  let v = { name: titleWords($('pName').value), category: titleWords($('pCat').value) || null, rack_no: rackFormat($('pRack').value) || null, stock_qty: +$('pStock').value || 0, purchase_rate: +$('pBuy').value || 0, dealer_rate: +$('pDealer').value || 0, retail_rate: +$('pRetail').value || 0 };
-  if (!v.name) return msg('globalMsg', 'Product name is required.', false);
-  let saved = await addRecord('products', v);
-  products.push(saved); writeSnapshot();
-  ['pName', 'pCat', 'pBuy', 'pRetail', 'pDealer', 'pStock', 'pRack'].forEach(x => $(x).value = '');
+function handleOffline(){
+  isOffline = true;
+  localStorage.setItem('pap_offline_flag', '1');
+  loadLocal();
+  $('setup').classList.add('hidden');
+  $('auth').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  $('userbar').innerHTML = '<span>Offline Mode</span><button type="button" style="width:auto;padding:6px 10px;background:#e8eef5;color:#18324d" onclick="backToSetup()">Cloud Login</button>';
+  updateNetBadge();
   render();
-};
-$('clearProduct').onclick = () => ['pName', 'pCat', 'pBuy', 'pRetail', 'pDealer', 'pStock', 'pRack'].forEach(x => $(x).value = '');
-window.deleteProduct = async id => {
-  if (!confirm('Product delete karna hai?')) return;
-  products = products.filter(p => p.id !== id);
-  await delRecord('products', id); writeSnapshot(); render();
-};
-
-$('saveCustomer').onclick = async () => {
-  let v = { name: titleWords($('cName').value), phone: $('cPhone').value.trim() || null, address: $('cAddress').value.trim() || null, opening_balance: Math.max(0, +$('cOpening').value || 0), credit_balance: Math.max(0, +$('cCredit').value || 0) };
-  if (!v.name) return msg('globalMsg', 'Customer name is required.', false);
-  let saved = await addRecord('customers', v);
-  customers.push(saved); writeSnapshot();
-  ['cName', 'cPhone', 'cAddress'].forEach(x => $(x).value = ''); $('cOpening').value = 0; $('cCredit').value = 0; render();
-};
-
-window.receivePayment = async id => {
-  let c = customers.find(x => x.id === id); if (!c) return;
-  let amt = Number(prompt(`Payment amount from ${c.name} (Due: ${money(customerDue(c))}):`, ''));
-  if (!Number.isFinite(amt) || amt <= 0) return;
-  let left = amt, op = Number(c.opening_balance || 0);
-  if (op > 0) { let cut = Math.min(op, left); c.opening_balance = op - cut; left -= cut; await updRecord('customers', c.id, { opening_balance: c.opening_balance }); }
-  for (let s of sales.filter(x => saleBelongsToCustomer(x, c) && Number(x.due) > 0)) {
-    if (left <= 0) break;
-    let cut = Math.min(Number(s.due), left);
-    s.paid = Number(s.paid || 0) + cut; s.due = Number(s.due) - cut; left -= cut;
-    await updRecord('sales', s.id, { paid: s.paid, due: s.due });
-  }
-  if (left > 0) { c.credit_balance = Number(c.credit_balance || 0) + left; await updRecord('customers', c.id, { credit_balance: c.credit_balance }); }
-  writeSnapshot(); render();
-};
-
-$('saleSearch').oninput = () => {
-  selectedSaleProductId = null; let q = $('saleSearch').value.trim(), box = $('salePickerList');
-  if (!q) { box.innerHTML = ''; return; }
-  let m = products.filter(p => productMatches(p, q)).slice(0, 12);
-  box.innerHTML = m.map(p => `<button type="button" data-pick="${p.id}"><b>${esc(p.name)}</b> — <span class="good">${money($('billType').value === 'retail' ? p.retail_rate : p.dealer_rate)}</span> <span class="mini">(Stock: ${p.stock_qty})</span></button>`).join('');
-};
-$('salePickerList').onclick = e => {
-  let b = e.target.closest('[data-pick]'); if (!b) return;
-  let p = products.find(x => x.id === b.dataset.pick); if (!p) return;
-  selectedSaleProductId = p.id; $('saleSearch').value = p.name; $('salePickerList').innerHTML = '';
-};
-$('addLine').onclick = () => {
-  let p = selectedSaleProductId ? products.find(x => x.id === selectedSaleProductId) : products.filter(x => productMatches(x, $('saleSearch').value))[0];
-  if (!p) return msg('globalMsg', 'Product not found.', false);
-  let qty = Math.max(1, +$('saleQty').value || 1), rate = Number($('billType').value === 'retail' ? p.retail_rate : p.dealer_rate);
-  let old = cart.find(x => x.id === p.id); if (old) { old.qty += qty; old.rate = rate; } else cart.push({ id: p.id, name: p.name, qty, rate });
-  selectedSaleProductId = null; $('saleSearch').value = ''; $('saleQty').value = 1; drawCart();
-};
-function drawCart() {
-  $('cartRows').innerHTML = cart.map((x, i) => `<tr><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.rate)}</td><td>${money(x.qty * x.rate)}</td><td><button class="danger" type="button" onclick="cart.splice(${i},1);drawCart()">Remove</button></td></tr>`).join('');
-  let sub = cart.reduce((a, x) => a + x.qty * x.rate, 0), disc = Math.min(sub, Math.max(0, +$('billDiscount').value || 0)), tot = sub - disc, paid = Math.max(0, +$('billPaid').value || 0);
-  $('billSubtotal').value = sub; $('billTotal').value = tot; $('billDue').value = Math.max(0, tot - paid);
+  setTab('dashboard');
+  setMsg('globalMsg', 'Offline Mode khul gaya hai.', true);
 }
-$('billPaid').oninput = drawCart; $('billDiscount').oninput = drawCart;
 
-async function saveBill(doPrint) {
-  if (!cart.length) return msg('globalMsg', 'Add at least one product.', false);
-  let cname = titleWords($('saleCustomer').value), cust = findCustomerByName(cname);
-  if (!cust && cname) { cust = await addRecord('customers', { name: cname, opening_balance: 0, credit_balance: 0 }); customers.push(cust); }
-  let sub = cart.reduce((a, x) => a + x.qty * x.rate, 0), disc = Math.min(sub, Math.max(0, +$('billDiscount').value || 0)), tot = sub - disc, paid = Math.max(0, +$('billPaid').value || 0), due = Math.max(0, tot - paid);
-  let sale = await addRecord('sales', { customer_id: cust?.id || null, customer_name: cname || 'Walk-in', invoice_no: 'BPM-' + Date.now(), total: tot, discount: disc, paid, due, rate_type: $('billType').value });
-  sales.unshift(sale);
-  let items = [];
-  for (let x of cart) {
-    let prod = products.find(p => p.id === x.id);
-    let si = await addRecord('sale_items', { sale_id: sale.id, product_id: x.id, product_name: x.name, quantity: x.qty, unit_rate: x.rate, dealer_rate: x.rate, line_total: x.qty * x.rate });
-    saleItems.push(si); items.push(si);
-    if (prod) { prod.stock_qty = Math.max(0, Number(prod.stock_qty || 0) - x.qty); await updRecord('products', prod.id, { stock_qty: prod.stock_qty }); }
-  }
-  cart = []; $('billPaid').value = 0; $('billDiscount').value = 0; $('saleCustomer').value = '';
-  writeSnapshot(); drawCart(); render();
-  if (doPrint) printInvoice(sale, cname || 'Walk-in', items);
+function backToSetup(){
+  isOffline = false;
+  localStorage.removeItem('pap_offline_flag');
+  $('app').classList.add('hidden');
+  $('setup').classList.remove('hidden');
+  $('auth').classList.remove('hidden');
+  updateNetBadge();
 }
-$('saveSale').onclick = () => saveBill(false); $('savePrint').onclick = () => saveBill(true);
-window.deleteSale = async id => {
-  if (!confirm('Bill delete karna hai?')) return;
-  sales = sales.filter(s => s.id !== id); saleItems = saleItems.filter(i => i.sale_id !== id);
-  await delRecord('sales', id); writeSnapshot(); render();
-};
 
-$('saveReturn').onclick = async () => {
-  let cname = titleWords($('returnCustomerInput').value) || 'Walk-in', pname = titleWords($('returnProductInput').value), qty = Math.max(1, +$('returnQty').value || 1), rate = Math.max(0, +$('returnRate').value || 0);
-  if (!pname) return msg('globalMsg', 'Product name likhein.', false);
-  let amt = qty * rate;
-  let ret = await addRecord('sales_returns', { customer_name: cname, invoice_no: 'RET-' + Date.now(), total_amount: amt, cash_refunded: +$('returnCashRefund').value || amt, due_adjusted: +$('returnDueCut').value || 0, credit_added: +$('returnCreditAdd').value || 0 });
-  returnsData.unshift(ret);
-  let prod = products.find(p => norm(p.name) === norm(pname));
-  if (prod) { prod.stock_qty = Number(prod.stock_qty || 0) + qty; await updRecord('products', prod.id, { stock_qty: prod.stock_qty }); }
-  writeSnapshot(); render();
-};
-
-function printInvoice(s, cname, items) {
-  let html = `<html><head><title>${esc(s.invoice_no)}</title><style>body{font:14px Arial;padding:24px}table{width:100%;border-collapse:collapse;margin-top:16px}td,th{padding:8px;border-bottom:1px solid #ddd;text-align:left}</style></head><body><h2>Pakistan Auto Parts And Oil Trader</h2><p>Invoice: ${esc(s.invoice_no)}<br>Date: ${new Date(s.created_at || Date.now()).toLocaleString()}<br>Customer: ${esc(cname)}</p><table><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Total</th></tr>${items.map(x => `<tr><td>${esc(x.product_name)}</td><td>${x.quantity}</td><td>${money(x.unit_rate ?? x.dealer_rate)}</td><td>${money(x.line_total)}</td></tr>`).join('')}</table><h3>Net Total: ${money(s.total)}</h3><p>Paid: ${money(s.paid)} | Due: ${money(s.due)}</p><script>window.print()<\/script></body></html>`;
-  let w = window.open('', '_blank'); if (w) { w.document.write(html); w.document.close(); }
+function handleSignup(){
+  sb = sb || makeClient();
+  if(!sb){ setMsg('authMsg', 'Pehle Connect & save on this device dabayen.', false); return; }
+  var em = ($('email').value || '').trim();
+  var pw = $('password').value || '';
+  if(!em || pw.length < 6){ setMsg('authMsg', 'Email aur kam az kam 6 characters ka password likhein.', false); return; }
+  setMsg('authMsg', 'Creating account...', true);
+  sb.auth.signUp({ email: em, password: pw }).then(function(res){
+    if(res.error) return setMsg('authMsg', res.error.message, false);
+    if(res.data && res.data.session){
+      user = res.data.user;
+      enterApp();
+    }else{
+      setMsg('authMsg', 'Account request bhej di gayi hai. Email check karein ya Log in dabayen.', true);
+    }
+  });
 }
-window.printSale = id => { let s = sales.find(x => x.id === id); if (!s) return; printInvoice(s, s.customer_name || 'Walk-in', saleItems.filter(x => x.sale_id === id)); };
 
-$('openPrivateReports').onclick = () => {
-  let pin = localStorage.getItem('bpm_reports_pin');
-  if (!pin) { let n = prompt('Naya PIN banayein (4 digits):'); if (!n || n.length < 4) return; localStorage.setItem('bpm_reports_pin', n); pin = n; }
-  if (prompt('PIN enter karein:') !== pin) return alert('Ghalat PIN');
-  $('privateReports').classList.remove('hidden');
-  $('rStock').textContent = money(products.reduce((a, p) => a + Number(p.purchase_rate || 0) * Number(p.stock_qty || 0), 0));
-  $('rSales').textContent = money(sales.reduce((a, s) => a + Number(s.total || 0), 0));
-  $('rDue').textContent = money(customers.reduce((a, c) => a + customerDue(c), 0));
-  $('rCredit').textContent = money(customers.reduce((a, c) => a + Number(c.credit_balance || 0), 0));
-  $('rProfit').textContent = money(saleItems.reduce((a, x) => a + (Number(x.unit_rate || 0) - Number(x.purchase_rate || 0)) * Number(x.quantity || 0), 0));
-};
-$('changeReportPin').onclick = () => {
-  let n = prompt('Naya PIN enter karein (4 digits):');
-  if (n && n.length >= 4) { localStorage.setItem('bpm_reports_pin', n); alert('PIN updated.'); }
-};
+function handleLogin(){
+  sb = sb || makeClient();
+  if(!sb){ setMsg('authMsg', 'Pehle Connect & save on this device dabayen.', false); return; }
+  var em = ($('email').value || '').trim();
+  var pw = $('password').value || '';
+  if(!em || !pw){ setMsg('authMsg', 'Email aur password likhein.', false); return; }
+  setMsg('authMsg', 'Logging in...', true);
+  sb.auth.signInWithPassword({ email: em, password: pw }).then(function(res){
+    if(res.error) return setMsg('authMsg', res.error.message, false);
+    user = res.data.user;
+    isOffline = false;
+    localStorage.removeItem('pap_offline_flag');
+    enterApp();
+  });
+}
 
-window.addEventListener('online', () => { updateNetUI(); flushQueue(); });
-window.addEventListener('offline', () => { updateNetUI(); msg('globalMsg', 'Offline mode active — data device mein save ho ga.', true); });
+function handleLogout(){
+  if(sb && navigator.onLine){ try{ sb.auth.signOut(); }catch(e){} }
+  user = null;
+  $('app').classList.add('hidden');
+  $('auth').classList.remove('hidden');
+  $('userbar').innerHTML = '';
+  setMsg('authMsg', 'Logged out.', true);
+}
 
-(async () => {
-  updateNetUI();
-  let u = localStorage.getItem('bpm_url'), k = localStorage.getItem('bpm_key');
-  if (u) $('supUrl').value = u;
-  if (k) $('supKey').value = k;
-  if (localStorage.getItem('bpm_offline_active') === '1') {
-    openOfflineApp();
+function enterApp(){
+  $('setup').classList.add('hidden');
+  $('auth').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  $('userbar').innerHTML = '<span>' + esc((user && user.email) || 'User') + '</span><button type="button" style="width:auto;padding:6px 10px;background:#e8eef5;color:#18324d" onclick="handleLogout()">Log out</button>';
+  updateNetBadge();
+  loadCloudData();
+  setTab('dashboard');
+}
+
+function loadCloudData(){
+  if(!navigator.onLine || isOffline || !sb || !user){
+    loadLocal();
+    render();
     return;
   }
-  if (u && k && window.supabase && typeof window.supabase.createClient === 'function') {
-    sb = makeSbClient();
-    $('setup').classList.add('hidden');
-    $('auth').classList.remove('hidden');
-    if (navigator.onLine) {
-      try {
-        let { data } = await sb.auth.getSession();
-        if (data && data.session) {
-          user = data.session.user;
-          await bootOnline();
-          return;
-        }
-      } catch {}
-    } else {
-      openOfflineApp();
+  Promise.all([
+    sb.from('products').select('*').order('name'),
+    sb.from('customers').select('*').order('name'),
+    sb.from('sales').select('*').order('created_at', { ascending: false }),
+    sb.from('sale_items').select('*'),
+    sb.from('sales_returns').select('*').order('created_at', { ascending: false })
+  ]).then(function(results){
+    if(results[0] && !results[0].error) products = results[0].data || [];
+    if(results[1] && !results[1].error) customers = results[1].data || [];
+    if(results[2] && !results[2].error) sales = results[2].data || [];
+    if(results[3] && !results[3].error) saleItems = results[3].data || [];
+    if(results[4] && !results[4].error) returnsData = results[4].data || [];
+    saveLocal();
+    render();
+    setMsg('globalMsg', 'Cloud data load aur local offline copy save ho gayi.', true);
+  }).catch(function(){
+    loadLocal();
+    render();
+  });
+}
+
+function syncToCloud(){
+  if(!navigator.onLine){ setMsg('settingsMsg', 'Abhi internet off hai.', false); return; }
+  sb = sb || makeClient();
+  if(!sb || !user){ setMsg('settingsMsg', 'Pehle cloud account se Log in karein.', false); return; }
+  setMsg('settingsMsg', 'Syncing...', true);
+  Promise.all(products.map(function(p){
+    var row = { name: p.name, category: p.category || null, rack_no: p.rack_no || null, stock_qty: Number(p.stock_qty || 0), purchase_rate: Number(p.purchase_rate || 0), dealer_rate: Number(p.dealer_rate || 0), retail_rate: Number(p.retail_rate || 0), user_id: user.id };
+    return sb.from('products').insert(row);
+  })).then(function(){
+    loadCloudData();
+    setMsg('settingsMsg', 'Sync mukammal ho gaya.', true);
+  }).catch(function(e){
+    setMsg('settingsMsg', 'Sync note: ' + e.message, false);
+  });
+}
+
+function saveSettings(){
+  var u = ($('settingsUrl').value || '').trim();
+  var k = ($('settingsKey').value || '').trim();
+  if(!u || !k){ setMsg('settingsMsg', 'URL aur key likhein.', false); return; }
+  localStorage.setItem('bpm_url', u);
+  localStorage.setItem('bpm_key', k);
+  sb = makeClient();
+  setMsg('settingsMsg', 'Settings save ho gayi.', true);
+}
+
+function setTab(tab){
+  var tabs = ['dashboard', 'products', 'customers', 'sale', 'history', 'returns', 'settings'];
+  for(var i = 0; i < tabs.length; i++){
+    var el = $(tabs[i]);
+    if(el) el.classList.toggle('hidden', tabs[i] !== tab);
+  }
+  var btns = document.querySelectorAll('nav button');
+  for(var j = 0; j < btns.length; j++){
+    btns[j].classList.toggle('active', btns[j].getAttribute('data-tab') === tab);
+  }
+  if(tab === 'settings'){
+    $('settingsUrl').value = localStorage.getItem('bpm_url') || '';
+    $('settingsKey').value = localStorage.getItem('bpm_key') || '';
+  }
+  render();
+}
+
+function render(){
+  updateNetBadge();
+  if($('statProducts')) $('statProducts').textContent = products.length;
+  if($('statCustomers')) $('statCustomers').textContent = customers.length;
+
+  var pq = norm($('productSearch') ? $('productSearch').value : '');
+  var pList = products.filter(function(p){ return !pq || norm(p.name).indexOf(pq) !== -1 || norm(p.rack_no).indexOf(pq) !== -1; });
+  if($('productRows')){
+    $('productRows').innerHTML = pList.map(function(p, idx){
+      return '<tr><td>' + (idx + 1) + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.category || '-') + '</td><td>' + esc(p.rack_no || '-') + '</td><td>' + Number(p.stock_qty || 0) + '</td><td>' + money(p.purchase_rate) + '</td><td>' + money(p.dealer_rate) + '</td><td>' + money(p.retail_rate) + '</td><td><button class="danger" type="button" onclick="deleteProduct(\'' + p.id + '\')">Delete</button></td></tr>';
+    }).join('');
+  }
+
+  var cq = norm($('customerSearch') ? $('customerSearch').value : '');
+  var cList = customers.filter(function(c){ return !cq || norm(c.name).indexOf(cq) !== -1 || norm(c.phone).indexOf(cq) !== -1; });
+  if($('customerRows')){
+    $('customerRows').innerHTML = cList.map(function(c){
+      var due = Number(c.opening_balance || 0) + sales.filter(function(s){ return norm(s.customer_name) === norm(c.name); }).reduce(function(a, s){ return a + Number(s.due || 0); }, 0);
+      return '<tr><td><b>' + esc(c.name) + '</b></td><td>' + esc(c.phone || '') + '</td><td>' + esc(c.address || '') + '</td><td class="' + (due > 0 ? 'bad' : '') + '">' + money(due) + '</td><td class="good">' + money(c.credit_balance || 0) + '</td><td><button class="secondary" type="button" onclick="payCustomer(\'' + c.id + '\')">Receive Payment</button></td></tr>';
+    }).join('');
+  }
+  if($('customerOptions')){
+    $('customerOptions').innerHTML = customers.map(function(c){ return '<option value="' + esc(c.name) + '"></option>'; }).join('');
+  }
+
+  var hq = norm($('historySearch') ? $('historySearch').value : '');
+  var sList = sales.filter(function(s){ return !hq || norm(s.customer_name).indexOf(hq) !== -1 || norm(s.invoice_no).indexOf(hq) !== -1; });
+  if($('salesRows')){
+    $('salesRows').innerHTML = sList.map(function(s){
+      return '<tr><td><b>' + esc(s.customer_name || 'Walk-in') + '</b></td><td>' + money(s.total) + '</td><td>' + money(s.discount || 0) + '</td><td>' + money(s.paid) + '</td><td class="' + (Number(s.due || 0) > 0 ? 'bad' : '') + '">' + money(s.due) + '</td><td><button class="danger" type="button" onclick="deleteSale(\'' + s.id + '\')">Delete</button></td></tr>';
+    }).join('');
+  }
+
+  if($('returnRows')){
+    $('returnRows').innerHTML = returnsData.map(function(r){
+      return '<tr><td>' + esc(new Date(r.created_at || Date.now()).toLocaleString()) + '</td><td>' + esc(r.invoice_no || '-') + '</td><td>' + esc(r.customer_name || '-') + '</td><td>' + money(r.total_amount) + '</td></tr>';
+    }).join('') || '<tr><td colspan="4">No returns yet.</td></tr>';
+  }
+}
+
+function runHomeSearch(){
+  var q = norm($('homeSearch').value);
+  if(!q){ $('homeSearchResults').innerHTML = ''; return; }
+  var f = products.filter(function(p){ return norm(p.name).indexOf(q) !== -1 || norm(p.rack_no).indexOf(q) !== -1; }).slice(0, 10);
+  $('homeSearchResults').innerHTML = f.length ? f.map(function(p){
+    return '<button type="button"><b>' + esc(p.name) + '</b> — <span class="muted">Stock: ' + p.stock_qty + ' · Dealer: ' + money(p.dealer_rate) + ' · Retail: ' + money(p.retail_rate) + '</span></button>';
+  }).join('') : '<div class="status">No matching product found.</div>';
+}
+
+function saveProduct(){
+  var name = ($('pName').value || '').trim();
+  if(!name){ setMsg('globalMsg', 'Product name likhein.', false); return; }
+  var item = {
+    id: 'p_' + Date.now(),
+    name: name,
+    category: ($('pCat').value || '').trim() || null,
+    rack_no: ($('pRack').value || '').trim() || null,
+    stock_qty: Number($('pStock').value || 0),
+    purchase_rate: Number($('pBuy').value || 0),
+    dealer_rate: Number($('pDealer').value || 0),
+    retail_rate: Number($('pRetail').value || 0)
+  };
+  products.push(item);
+  saveLocal();
+  if(navigator.onLine && !isOffline && sb && user){
+    sb.from('products').insert({ name: item.name, category: item.category, rack_no: item.rack_no, stock_qty: item.stock_qty, purchase_rate: item.purchase_rate, dealer_rate: item.dealer_rate, retail_rate: item.retail_rate, user_id: user.id }).then(function(){});
+  }
+  clearProduct();
+  render();
+  setMsg('globalMsg', 'Product save ho gaya.', true);
+}
+function clearProduct(){ ['pName','pCat','pRack','pStock','pBuy','pDealer','pRetail'].forEach(function(id){ if($(id)) $(id).value = ''; }); }
+function deleteProduct(id){
+  if(!confirm('Product delete karna hai?')) return;
+  products = products.filter(function(p){ return p.id !== id; });
+  saveLocal();
+  render();
+}
+
+function saveCustomer(){
+  var name = ($('cName').value || '').trim();
+  if(!name){ setMsg('globalMsg', 'Customer name likhein.', false); return; }
+  var cust = {
+    id: 'c_' + Date.now(),
+    name: name,
+    phone: ($('cPhone').value || '').trim() || null,
+    address: ($('cAddress').value || '').trim() || null,
+    opening_balance: Number($('cOpening').value || 0),
+    credit_balance: Number($('cCredit').value || 0)
+  };
+  customers.push(cust);
+  saveLocal();
+  if(navigator.onLine && !isOffline && sb && user){
+    sb.from('customers').insert({ name: cust.name, phone: cust.phone, address: cust.address, opening_balance: cust.opening_balance, credit_balance: cust.credit_balance, user_id: user.id }).then(function(){});
+  }
+  ['cName','cPhone','cAddress'].forEach(function(id){ $(id).value = ''; });
+  $('cOpening').value = 0; $('cCredit').value = 0;
+  render();
+  setMsg('globalMsg', 'Customer save ho gaya.', true);
+}
+
+function payCustomer(id){
+  var c = customers.find(function(x){ return x.id === id; });
+  if(!c) return;
+  var amt = Number(prompt('Payment received from ' + c.name + ':', ''));
+  if(!amt || amt <= 0) return;
+  c.opening_balance = Math.max(0, Number(c.opening_balance || 0) - amt);
+  saveLocal();
+  render();
+}
+
+function onSaleSearch(){
+  selectedProdId = null;
+  var q = norm($('saleSearch').value);
+  var box = $('salePickerList');
+  if(!q){ box.innerHTML = ''; return; }
+  var type = $('billType').value;
+  var m = products.filter(function(p){ return norm(p.name).indexOf(q) !== -1; }).slice(0, 10);
+  box.innerHTML = m.map(function(p){
+    var r = type === 'retail' ? p.retail_rate : p.dealer_rate;
+    return '<button type="button" onclick="pickSaleProd(\'' + p.id + '\')"><b>' + esc(p.name) + '</b> — <span class="good">' + money(r) + '</span> <span class="mini">(Stock: ' + p.stock_qty + ')</span></button>';
+  }).join('');
+}
+function pickSaleProd(id){
+  var p = products.find(function(x){ return x.id === id; });
+  if(!p) return;
+  selectedProdId = p.id;
+  $('saleSearch').value = p.name;
+  $('salePickerList').innerHTML = '';
+}
+
+function addLine(){
+  var p = selectedProdId ? products.find(function(x){ return x.id === selectedProdId; }) : products.find(function(x){ return norm(x.name).indexOf(norm($('saleSearch').value)) !== -1; });
+  if(!p){ setMsg('globalMsg', 'Product select karein.', false); return; }
+  var qty = Math.max(1, Number($('saleQty').value || 1));
+  var rate = Number($('billType').value === 'retail' ? p.retail_rate : p.dealer_rate);
+  cart.push({ id: p.id, name: p.name, qty: qty, rate: rate });
+  selectedProdId = null; $('saleSearch').value = ''; $('saleQty').value = 1;
+  drawCart();
+}
+
+function drawCart(){
+  $('cartRows').innerHTML = cart.map(function(x, i){
+    return '<tr><td>' + esc(x.name) + '</td><td>' + x.qty + '</td><td>' + money(x.rate) + '</td><td>' + money(x.qty * x.rate) + '</td><td><button class="danger" type="button" onclick="cart.splice(' + i + ',1);drawCart()">Remove</button></td></tr>';
+  }).join('');
+  var sub = cart.reduce(function(a, x){ return a + x.qty * x.rate; }, 0);
+  var disc = Math.min(sub, Math.max(0, Number($('billDiscount').value || 0)));
+  var tot = sub - disc;
+  var paid = Math.max(0, Number($('billPaid').value || 0));
+  $('billSubtotal').value = sub;
+  $('billTotal').value = tot;
+  $('billDue').value = Math.max(0, tot - paid);
+}
+
+function saveBill(doPrint){
+  if(!cart.length){ setMsg('globalMsg', 'Kam az kam ek product add karein.', false); return; }
+  var cname = ($('saleCustomer').value || '').trim() || 'Walk-in';
+  var sub = cart.reduce(function(a, x){ return a + x.qty * x.rate; }, 0);
+  var disc = Math.min(sub, Math.max(0, Number($('billDiscount').value || 0)));
+  var tot = sub - disc;
+  var paid = Math.max(0, Number($('billPaid').value || 0));
+  var due = Math.max(0, tot - paid);
+  var s = { id: 's_' + Date.now(), customer_name: cname, invoice_no: 'PAP-' + Date.now(), total: tot, discount: disc, paid: paid, due: due, created_at: new Date().toISOString() };
+  sales.unshift(s);
+  for(var i = 0; i < cart.length; i++){
+    var prod = products.find(function(p){ return p.id === cart[i].id; });
+    if(prod) prod.stock_qty = Math.max(0, Number(prod.stock_qty || 0) - cart[i].qty);
+  }
+  var lines = cart.slice();
+  cart = []; $('billPaid').value = 0; $('billDiscount').value = 0; $('saleCustomer').value = '';
+  saveLocal(); drawCart(); render();
+  setMsg('globalMsg', 'Bill save ho gaya.', true);
+  if(doPrint){
+    var w = window.open('', '_blank');
+    if(w){
+      w.document.write('<html><body><h2>Pakistan Auto Parts And Oil Trader</h2><p>Invoice: ' + esc(s.invoice_no) + '<br>Customer: ' + esc(cname) + '</p><table border="1" cellpadding="6" style="border-collapse:collapse;width:100%"><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr>' + lines.map(function(x){ return '<tr><td>' + esc(x.name) + '</td><td>' + x.qty + '</td><td>' + money(x.rate) + '</td><td>' + money(x.qty * x.rate) + '</td></tr>'; }).join('') + '</table><h3>Net Total: ' + money(tot) + '</h3><p>Paid: ' + money(paid) + ' | Due: ' + money(due) + '</p><script>window.print()<\/script></body></html>');
+      w.document.close();
     }
   }
+}
+
+function deleteSale(id){
+  if(!confirm('Bill delete karna hai?')) return;
+  sales = sales.filter(function(s){ return s.id !== id; });
+  saveLocal(); render();
+}
+
+function saveReturn(){
+  var pname = ($('returnProductInput').value || '').trim();
+  if(!pname){ setMsg('globalMsg', 'Product name likhein.', false); return; }
+  var qty = Math.max(1, Number($('returnQty').value || 1));
+  var rate = Math.max(0, Number($('returnRate').value || 0));
+  returnsData.unshift({ id: 'r_' + Date.now(), invoice_no: 'RET-' + Date.now(), customer_name: ($('returnCustomerInput').value || '').trim() || 'Walk-in', total_amount: qty * rate, created_at: new Date().toISOString() });
+  var prod = products.find(function(p){ return norm(p.name) === norm(pname); });
+  if(prod) prod.stock_qty = Number(prod.stock_qty || 0) + qty;
+  saveLocal(); render();
+  setMsg('globalMsg', 'Return save ho gaya.', true);
+}
+
+(function(){
+  updateNetBadge();
+  var u = localStorage.getItem('bpm_url');
+  var k = localStorage.getItem('bpm_key');
+  if(u && $('supUrl')) $('supUrl').value = u;
+  if(k && $('supKey')) $('supKey').value = k;
+  if(localStorage.getItem('pap_offline_flag') === '1'){
+    handleOffline();
+    return;
+  }
+  if(u && k){
+    $('auth').classList.remove('hidden');
+  }
 })();
-</script></body></html>
+</script>
+</body>
+</html>
