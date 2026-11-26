@@ -9,7 +9,10 @@
 *{box-sizing:border-box}body{margin:0;font:15px Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
 header{background:linear-gradient(110deg,#10243a,#183d5e);color:#fff;padding:15px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:0;z-index:5;box-shadow:0 3px 14px #10243a20}
 .brand{display:flex;align-items:center;gap:12px;min-width:0}.brand-logo{width:48px;height:48px;object-fit:cover;border-radius:11px;border:1px solid #d6b45d;box-shadow:0 2px 10px #0005}.brand-title{font-size:17px;line-height:1.2}.brand-title small{display:block;margin-top:4px;font-size:10px;letter-spacing:1.1px}
-h1{font-size:20px;margin:0;letter-spacing:.1px}header small{font-size:11px;font-weight:500;opacity:.8}.userbar{display:flex;align-items:center;gap:12px;color:#dce7f1;font-size:13px}
+h1{font-size:20px;margin:0;letter-spacing:.1px}header small{font-size:11px;font-weight:500;opacity:.8}.userbar{display:flex;align-items:center;gap:12px;color:#dce7f1;font-size:13px;flex-wrap:wrap}
+.net-pill{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.net-on{background:#08744355;color:#6ee7b7;border:1px solid #10b98166}
+.net-off{background:#b4231866;color:#fca5a5;border:1px solid #ef444477}
 main{max-width:1400px;margin:24px auto;padding:0 20px}.card{background:white;border:1px solid var(--line);border-radius:15px;padding:20px;margin-bottom:18px;box-shadow:0 5px 18px #10243a08}
 h2{font-size:19px;margin:0 0 16px}h3{margin:0 0 8px}.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}.field{flex:1;min-width:145px;position:relative}label{display:block;font-size:13px;color:#475569;margin:0 0 6px}
 input,select,button{font:inherit;border-radius:9px;padding:11px 12px;border:1px solid #cbd5e1;width:100%;background:white;color:var(--ink)}input:focus,select:focus{outline:2px solid #9bc8ee;border-color:#6ca9d8}button{background:var(--blue);color:white;border:0;cursor:pointer;font-weight:650;transition:.15s}button:hover{filter:brightness(.96);transform:translateY(-1px)}button.secondary{background:#e8eef5;color:#18324d}button.danger{background:#b42318}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{width:auto}
@@ -26,23 +29,23 @@ nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;padding:8px;background:#
 .subpanel{border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:14px;background:#fbfdff}.subpanel h3{margin:0 0 12px}.subpanel .row{margin:8px 0}.mini{font-size:12px;color:var(--muted)}.return-tag{display:inline-block;background:#fff3d6;color:#805500;padding:3px 7px;border-radius:6px;font-size:12px}
 </style></head>
 <body>
-<header><div class="brand"><img class="brand-logo" src="./dashboard-logo.png" alt="Pakistan Auto Parts And Oil Trader logo"><h1 class="brand-title">Pakistan Auto Parts<br>And Oil Trader <small>SHOP MANAGEMENT</small></h1></div><div id="userbar" class="userbar"></div></header>
+<header><div class="brand"><img class="brand-logo" src="./dashboard-logo.png" alt="Pakistan Auto Parts And Oil Trader logo"><h1 class="brand-title">Pakistan Auto Parts<br>And Oil Trader <small>SHOP MANAGEMENT</small></h1></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span id="netStatusBadge" class="net-pill net-on">Online</span><button id="syncQueueBtn" class="secondary hidden" style="width:auto;padding:6px 11px;font-size:12px">↻ Sync (0)</button><div id="userbar" class="userbar"></div></div></header>
 <main>
 <section id="setup" class="card">
 <h2>Connect your Supabase project</h2>
 <p class="muted">Enter your Project URL and anon/public key from Supabase → Project Settings → API. Never use the service_role or secret key here.</p>
 <div class="row"><div class="field"><label>Supabase Project URL</label><input id="supUrl" placeholder="https://xxxxxxxx.supabase.co"></div><div class="field"><label>Anon / Publishable key</label><input id="supKey" placeholder="sb_publishable_... or eyJ..."></div></div>
-<div class="actions" style="margin-top:10px"><button id="connectBtn">Connect & save on this device</button></div>
+<div class="actions" style="margin-top:10px"><button id="connectBtn">Connect & save on this device</button><button id="offlineModeBtn" class="secondary" type="button">Continue Offline (Saved Data)</button></div>
 <div id="setupMsg" class="status">First run: paste your project details, then sign up below.</div>
 </section>
 <section id="auth" class="card hidden">
 <h2>Account login / sign up</h2><div class="row"><div class="field"><label>Email</label><input id="email" type="email" autocomplete="email"></div><div class="field"><label>Password (at least 6 characters)</label><input id="password" type="password" autocomplete="current-password"></div></div>
-<div class="actions" style="margin-top:10px"><button id="signup">Create account</button><button class="secondary" id="login">Log in</button><button class="secondary" id="logout">Log out</button></div><div id="authMsg" class="status">Create an account or log in.</div>
+<div class="actions" style="margin-top:10px"><button id="signup">Create account</button><button class="secondary" id="login">Log in</button><button class="secondary" id="authOfflineBtn" type="button">Open Offline Mode</button><button class="secondary" id="logout">Log out</button></div><div id="authMsg" class="status">Create an account or log in.</div>
 </section>
 <section id="app" class="hidden">
 <nav class="no-print"><button class="active" data-tab="dashboard">Dashboard</button><button data-tab="products">Products</button><button data-tab="customers">Customers</button><button data-tab="sale">New Bill</button><button data-tab="history">Sales History</button><button data-tab="returns">Returns</button><button data-tab="settings">⚙ Settings</button></nav>
 
-<section id="dashboard" class="card"><h2>Shop Dashboard</h2><p class="muted">Products dhoondein, stock dekhein aur apna kaam jaldi shuru karein.</p><div class="hero-search"><input id="homeSearch" placeholder="Smart search product name or rack number..." autocomplete="off"><button id="homeSearchBtn">Search</button></div><div id="homeSearchResults" class="search-results"></div><div class="quick no-print"><button data-go="products"><strong>＋ Add Product</strong><span>Save a new item and its rates</span></button><button data-go="sale"><strong>▤ Create New Bill</strong><span>Dealer or retail billing</span></button><button data-go="customers"><strong>♙ Customers</strong><span>Accounts, dues and payments</span></button><button data-go="history"><strong>▤ Sales History</strong><span>Find and print saved bills</span></button></div><div class="grid"><div class="statbox"><div class="muted">Products</div><div class="stat" id="statProducts">0</div></div><div class="statbox"><div class="muted">Customers</div><div class="stat" id="statCustomers">0</div></div></div><p class="muted">Data is stored in your Supabase cloud project and is available after logging in on another device.</p></section>
+<section id="dashboard" class="card"><h2>Shop Dashboard</h2><p class="muted">Products dhoondein, stock dekhein aur apna kaam jaldi shuru karein.</p><div class="hero-search"><input id="homeSearch" placeholder="Smart search product name or rack number..." autocomplete="off"><button id="homeSearchBtn">Search</button></div><div id="homeSearchResults" class="search-results"></div><div class="quick no-print"><button data-go="products"><strong>＋ Add Product</strong><span>Save a new item and its rates</span></button><button data-go="sale"><strong>▤ Create New Bill</strong><span>Dealer or retail billing</span></button><button data-go="customers"><strong>♙ Customers</strong><span>Accounts, dues and payments</span></button><button data-go="history"><strong>▤ Sales History</strong><span>Find and print saved bills</span></button></div><div class="grid"><div class="statbox"><div class="muted">Products</div><div class="stat" id="statProducts">0</div></div><div class="statbox"><div class="muted">Customers</div><div class="stat" id="statCustomers">0</div></div></div><p class="muted">Data is stored in your Supabase cloud project and cached locally for offline use.</p></section>
 
 <section id="products" class="card hidden"><h2>Products / مصنوعات</h2><div class="row">
 <div class="field"><label>Product name</label><input id="pName" autocomplete="off"></div><div class="field"><label>Category</label><input id="pCat"></div><div class="field"><label>Rack number</label><input id="pRack" placeholder="# e.g. 12"></div><div class="field"><label>Stock quantity</label><input id="pStock" type="number" min="0"></div><div class="field"><label>Purchase rate</label><input id="pBuy" type="number" min="0"></div><div class="field"><label>Dealer rate</label><input id="pDealer" type="number" min="0"></div><div class="field"><label>Retail rate</label><input id="pRetail" type="number" min="0"></div></div><div class="actions" style="margin:12px 0"><button id="saveProduct">Save product</button><button class="secondary" id="clearProduct">Clear</button></div><input id="productSearch" placeholder="Smart search: type product name (exact match upar dikhega)..." autocomplete="off" style="margin-bottom:10px"><div class="tablewrap"><table><thead><tr><th>No.</th><th>Product Name</th><th>Category</th><th>Rack Number</th><th>Stock</th><th>Purchase Rate</th><th>Dealer Rate</th><th>Retail Rate</th><th>Action</th></tr></thead><tbody id="productRows"></tbody></table></div></section>
@@ -60,10 +63,10 @@ nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;padding:8px;background:#
 <div class="field"><label>Customer name (optional — type or select)</label><input id="saleCustomer" list="customerOptions" placeholder="Type customer name or leave blank" autocomplete="off"><datalist id="customerOptions"></datalist><div id="saleCustomerInfo" class="mini" style="margin-top:4px"></div></div>
 <div class="field" style="flex:2;min-width:220px"><label>Find product (name/category/rack)</label><input id="saleSearch" placeholder="Type product name e.g. oil 700ml..." autocomplete="off"><div id="salePickerList" class="picker-list"></div></div>
 <div class="field" style="max-width:110px"><label>Quantity</label><input id="saleQty" type="number" min="1" value="1"></div>
-<div class="field" style="max-width:130px"><label>&nbsp;</label><button id="addLine">Add item</button></div>
+<div class="field" style="max-width:130px"><label> </label><button id="addLine">Add item</button></div>
 </div>
 <div class="tablewrap" style="margin-top:12px"><table><thead><tr><th>Product</th><th>Qty</th><th>Unit rate</th><th>Total</th><th></th></tr></thead><tbody id="cartRows"></tbody></table></div>
-<div class="row" style="margin-top:12px"><div class="field"><label>Subtotal</label><input id="billSubtotal" readonly value="0"></div><div class="field"><label>Discount (Rs)</label><input id="billDiscount" type="number" min="0" value="0" placeholder="0"></div><div class="field"><label>Net Total</label><input id="billTotal" readonly value="0"></div><div class="field"><label>Paid (Cash)</label><input id="billPaid" type="number" min="0" value="0"></div><div class="field"><label>Remaining (Udhaar)</label><input id="billDue" readonly value="0"></div><div class="field"><label>&nbsp;</label><div class="actions"><button id="saveSale">Save Bill</button><button id="savePrint" class="secondary">Save & Print</button></div></div></div>
+<div class="row" style="margin-top:12px"><div class="field"><label>Subtotal</label><input id="billSubtotal" readonly value="0"></div><div class="field"><label>Discount (Rs)</label><input id="billDiscount" type="number" min="0" value="0" placeholder="0"></div><div class="field"><label>Net Total</label><input id="billTotal" readonly value="0"></div><div class="field"><label>Paid (Cash)</label><input id="billPaid" type="number" min="0" value="0"></div><div class="field"><label>Remaining (Udhaar)</label><input id="billDue" readonly value="0"></div><div class="field"><label> </label><div class="actions"><button id="saveSale">Save Bill</button><button id="savePrint" class="secondary">Save & Print</button></div></div></div>
 <p class="muted">Agar customer ka Credit jama hai to pehle Credit se katoti hogi, phir baqi udhaar mein jayega. Bill mein sirf selected Dealer ya Retail rate show hoga.</p></section>
 
 <section id="history" class="card hidden"><h2>Sales history</h2>
@@ -83,13 +86,13 @@ nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;padding:8px;background:#
 <div class="field"><label>Cash Wapas Diya (Refunded Rs)</label><input id="returnCashRefund" type="number" min="0" value="0" placeholder="0"></div>
 <div class="field"><label>Udhaar (Due) se Cut (Rs)</label><input id="returnDueCut" type="number" min="0" value="0" placeholder="0"></div>
 <div class="field"><label>Credit mein Jama (Rs)</label><input id="returnCreditAdd" type="number" min="0" value="0" placeholder="0"></div>
-<div class="field" style="max-width:160px"><label>&nbsp;</label><button id="saveReturn">Save Return</button></div>
+<div class="field" style="max-width:160px"><label> </label><button id="saveReturn">Save Return</button></div>
 </div>
 <div id="returnPreview" class="status">Customer aur product likhein, aur decide karein ke kitne pesay cash wapas diye, kitne udhaar se kate, aur kitne credit mein jama kiye.</div>
 <h3 style="margin-top:20px">Return History</h3>
 <div class="tablewrap"><table><thead><tr><th>Date</th><th>Invoice</th><th>Customer</th><th>Returned item</th><th>Qty</th><th>Amount</th><th>Settlement</th><th>Action</th></tr></thead><tbody id="returnRows"></tbody></table></div></section>
 
-<section id="settings" class="card hidden"><h2>⚙ Settings / Cloud Connection</h2><p class="muted">Yahan Supabase connection details change kar sakte hain. Publishable key ko private password ki tarah treat karein; service_role ya secret key kabhi yahan paste na karein.</p><div class="row"><div class="field"><label>Supabase Project URL</label><input id="settingsUrl" placeholder="https://project.supabase.co"></div><div class="field"><label>Anon / Publishable key</label><input id="settingsKey" type="password" placeholder="sb_publishable_..."></div></div><div class="actions" style="margin-top:12px"><button id="saveSettings">Save connection settings</button><button class="secondary" id="showKey">Show / hide key</button><button class="secondary" id="settingsLogout">Log out</button></div><div id="settingsMsg" class="status">Connection details are stored on this device.</div><hr style="border:0;border-top:1px solid var(--line);margin:22px 0"><h2>🔒 Private Business Reports</h2><p class="muted">Yahan sirf aap apna maal, sale, market udhaar aur estimated munafa dekh sakte hain. Reports kholne ke liye alag PIN zaroori hai. PIN isi device par save hota hai.</p><div class="actions"><button id="openPrivateReports">Open Private Reports</button><button class="secondary" id="changeReportPin">Set / Change Reports PIN</button></div><div id="privateReports" class="hidden" style="margin-top:16px"><div class="row"><div class="field"><label>From date</label><input id="reportFrom" type="date"></div><div class="field"><label>To date</label><input id="reportTo" type="date"></div><div class="field"><label>&nbsp;</label><button id="refreshReports">Update Report</button></div></div><div class="grid" style="margin-top:14px"><div class="statbox"><div class="muted">Current stock purchase value</div><div class="stat" id="rStock">Rs 0</div></div><div class="statbox"><div class="muted">Sales in selected dates</div><div class="stat" id="rSales">Rs 0</div></div><div class="statbox"><div class="muted">Market outstanding (total)</div><div class="stat" id="rDue">Rs 0</div></div><div class="statbox"><div class="muted">Customer advance credit</div><div class="stat" id="rCredit">Rs 0</div></div><div class="statbox"><div class="muted">Estimated gross profit</div><div class="stat" id="rProfit">Rs 0</div></div></div><p class="muted">Munafa estimate hai: future bills ke liye sale ke waqt ka purchase rate record hota hai. Purane bills jin ka purchase rate record nahi hua, unka munafa exact nahi niklega. Ye net profit nahi; rent, salaries aur doosre kharchay shamil nahi.</p></div></section>
+<section id="settings" class="card hidden"><h2>⚙ Settings / Cloud Connection</h2><p class="muted">Yahan Supabase connection details change kar sakte hain. Publishable key ko private password ki tarah treat karein; service_role ya secret key kabhi yahan paste na karein.</p><div class="row"><div class="field"><label>Supabase Project URL</label><input id="settingsUrl" placeholder="https://project.supabase.co"></div><div class="field"><label>Anon / Publishable key</label><input id="settingsKey" type="password" placeholder="sb_publishable_..."></div></div><div class="actions" style="margin-top:12px"><button id="saveSettings">Save connection settings</button><button class="secondary" id="showKey">Show / hide key</button><button class="secondary" id="settingsSyncNow" type="button">↻ Sync Offline Data Now</button><button class="secondary" id="settingsLogout">Log out</button></div><div id="settingsMsg" class="status">Connection details are stored on this device.</div><hr style="border:0;border-top:1px solid var(--line);margin:22px 0"><h2>🔒 Private Business Reports</h2><p class="muted">Yahan sirf aap apna maal, sale, market udhaar aur estimated munafa dekh sakte hain. Reports kholne ke liye alag PIN zaroori hai. PIN isi device par save hota hai.</p><div class="actions"><button id="openPrivateReports">Open Private Reports</button><button class="secondary" id="changeReportPin">Set / Change Reports PIN</button></div><div id="privateReports" class="hidden" style="margin-top:16px"><div class="row"><div class="field"><label>From date</label><input id="reportFrom" type="date"></div><div class="field"><label>To date</label><input id="reportTo" type="date"></div><div class="field"><label> </label><button id="refreshReports">Update Report</button></div></div><div class="grid" style="margin-top:14px"><div class="statbox"><div class="muted">Current stock purchase value</div><div class="stat" id="rStock">Rs 0</div></div><div class="statbox"><div class="muted">Sales in selected dates</div><div class="stat" id="rSales">Rs 0</div></div><div class="statbox"><div class="muted">Market outstanding (total)</div><div class="stat" id="rDue">Rs 0</div></div><div class="statbox"><div class="muted">Customer advance credit</div><div class="stat" id="rCredit">Rs 0</div></div><div class="statbox"><div class="muted">Estimated gross profit</div><div class="stat" id="rProfit">Rs 0</div></div></div><p class="muted">Munafa estimate hai: future bills ke liye sale ke waqt ka purchase rate record hota hai. Purane bills jin ka purchase rate record nahi hua, unka munafa exact nahi niklega. Ye net profit nahi; rent, salaries aur doosre kharchay shamil nahi.</p></div></section>
 </section>
 <div id="globalMsg" class="status">Connect your project to get started.</div>
 </main>
@@ -118,7 +121,6 @@ function searchRank(p,q){
   let qWords=query.split(' ').filter(Boolean);
   let allWordsInName=qWords.length>1 && qWords.every(w=>name.includes(w));
   if(allWordsInName){
-    // Prefer closer length match so exact phrase like "clutch cola" beats longer ones
     return 2 + (name.length - query.length)*0.001;
   }
   if(name.includes(query))return 3 + name.indexOf(query)*0.01;
@@ -196,23 +198,23 @@ function reportNumbers(){
 function openReports(){let pin=localStorage.getItem('bpm_reports_pin');if(!pin){let n=prompt('Private Reports ke liye naya PIN banayein (kam az kam 4 digits):');if(!n||n.length<4)return alert('PIN kam az kam 4 characters ka hona chahiye.');let c=prompt('PIN dobara enter karein:');if(c!==n)return alert('PIN match nahi hua.');localStorage.setItem('bpm_reports_pin',n);pin=n}let entered=prompt('Private Reports PIN enter karein:');if(entered!==pin)return alert('Ghalat PIN. Reports nahi kholi gayi.');$('privateReports').classList.remove('hidden');reportNumbers()}
 $('openPrivateReports').onclick=openReports;$('refreshReports').onclick=reportNumbers;$('changeReportPin').onclick=()=>{let old=localStorage.getItem('bpm_reports_pin');if(old&&prompt('Current PIN enter karein:')!==old)return alert('Current PIN ghalat hai.');let n=prompt('Naya PIN (kam az kam 4 characters):');if(!n||n.length<4)return alert('PIN kam az kam 4 characters ka hona chahiye.');if(prompt('Naya PIN dobara enter karein:')!==n)return alert('PIN match nahi hua.');localStorage.setItem('bpm_reports_pin',n);alert('Private Reports PIN update ho gaya.')};
 
-// Home search with exact-first sorting
 function runHomeSearch(){
   let q=$('homeSearch').value.trim();
   if(!q){$('homeSearchResults').innerHTML='';return}
   let found=sortProductsBySearch(products.filter(p=>productMatches(p,q)),q).slice(0,15);
-  $('homeSearchResults').innerHTML=found.length?found.map(p=>`<button type="button" data-product="${p.id}"><b>${esc(p.name)}</b> &nbsp; <span class="muted">Category: ${esc(p.category||'-')} · Rack: ${esc(p.rack_no||'-')} · Stock: ${p.stock_qty} · Dealer: ${money(p.dealer_rate)} · Retail: ${money(p.retail_rate)}</span></button>`).join(''):'<div class="status">No matching product found.</div>';
+  $('homeSearchResults').innerHTML=found.length?found.map(p=>`<button type="button" data-product="${p.id}"><b>${esc(p.name)}</b>   <span class="muted">Category: ${esc(p.category||'-')} · Rack: ${esc(p.rack_no||'-')} · Stock: ${p.stock_qty} · Dealer: ${money(p.dealer_rate)} · Retail: ${money(p.retail_rate)}</span></button>`).join(''):'<div class="status">No matching product found.</div>';
 }
 $('homeSearch').oninput=runHomeSearch;$('homeSearchBtn').onclick=runHomeSearch;$('homeSearch').addEventListener('keydown',e=>{if(e.key==='Enter')runHomeSearch()});$('homeSearchResults').addEventListener('click',e=>{let b=e.target.closest('[data-product]');if(b){window.editProduct(b.dataset.product)}});
 
 $('connectBtn').onclick=()=>{try{if(!window.supabase?.createClient)throw Error('Internet connection required to load the cloud library. Refresh the page and try again.');let u=$('supUrl').value.trim(),k=$('supKey').value.trim();if(!u.startsWith('https://')||!k)return msg('setupMsg','Please enter a valid Project URL and anon/public key.',false);localStorage.setItem('bpm_url',u);localStorage.setItem('bpm_key',k);sb=client();$('auth').classList.remove('hidden');msg('setupMsg','Project details saved on this device. Now create an account or log in.')}catch(e){msg('setupMsg',e.message,false)}};
 $('signup').onclick=async()=>{try{let {data,error}=await sb.auth.signUp({email:$('email').value.trim(),password:$('password').value});if(error)throw error;msg('authMsg',data.session?'Account created.':'Sign-up submitted. If email confirmation is enabled, verify your email, then log in.')}catch(e){msg('authMsg',e.message,false)}};
 $('login').onclick=async()=>{try{let {data,error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;user=data.user;await boot()}catch(e){msg('authMsg',e.message,false)}};
-async function logout(){if(sb)await sb.auth.signOut();user=null;$('app').classList.add('hidden');$('setup').classList.add('hidden');$('auth').classList.remove('hidden');$('userbar').textContent='';$('globalMsg').classList.remove('hidden');msg('authMsg','Logged out. Log in to open your shop dashboard.')} $('logout').onclick=logout;
-async function boot(){ $('setup').classList.add('hidden');$('auth').classList.add('hidden');$('app').classList.remove('hidden');$('globalMsg').classList.add('hidden');$('userbar').innerHTML='<span>'+esc(user.email)+'</span><button id="headerLogout" style="width:auto;padding:7px 12px;background:#e8eef5;color:#18324d">Log out</button>';$('headerLogout').onclick=()=>logout();await loadAll();setTab(localStorage.getItem('bpm_active_tab')||'dashboard')}
+async function logout(){if(sb&&navigator.onLine)await sb.auth.signOut();user=null;$('app').classList.add('hidden');$('setup').classList.add('hidden');$('auth').classList.remove('hidden');$('userbar').textContent='';$('globalMsg').classList.remove('hidden');msg('authMsg','Logged out. Log in to open your shop dashboard.')} $('logout').onclick=logout;
+async function boot(){ $('setup').classList.add('hidden');$('auth').classList.add('hidden');$('app').classList.remove('hidden');$('globalMsg').classList.add('hidden');$('userbar').innerHTML='<span>'+esc(user?.email||'Offline Mode')+'</span><button id="headerLogout" style="width:auto;padding:7px 12px;background:#e8eef5;color:#18324d">Log out</button>';$('headerLogout').onclick=()=>logout();await loadAll();setTab(localStorage.getItem('bpm_active_tab')||'dashboard')}
 
 async function loadAll(){
   try{
+    if(!navigator.onLine||!sb||!user)throw new Error('Offline');
     let [p,c,s,i,r,ri,pay]=await Promise.all([
       sb.from('products').select('*').order('name'),
       sb.from('customers').select('*').order('name'),
@@ -230,9 +232,15 @@ async function loadAll(){
     returnsData=r.data||[];
     returnItemsData=ri.data||[];
     paymentsData=(pay && !pay.error)?(pay.data||[]):[];
+    saveOfflineSnapshot();
     render();
   }catch(e){
-    msg('globalMsg',e.message+' — Agar return tables missing ka error aaye to supplied update SQL Supabase SQL Editor mein run karein.',false);
+    if(loadOfflineSnapshot()){
+      render();
+      msg('globalMsg','Offline Mode: Device par saved data load ho gaya hai. Online hone par sync ho jaye ga.',true);
+    }else{
+      msg('globalMsg',e.message+' — Agar return tables missing ka error aaye to supplied update SQL Supabase SQL Editor mein run karein.',false);
+    }
   }
 }
 
@@ -243,7 +251,6 @@ function saleBelongsToCustomer(s,c){
   return false;
 }
 
-// Accurate due calculation: opening_balance + sum of active sales due (never negative)
 function customerDue(c){
   if(!c)return 0;
   let open=Number(c.opening_balance||0);
@@ -261,7 +268,6 @@ function render(){
   $('statProducts').textContent=products.length;
   $('statCustomers').textContent=customers.length;
 
-  // Products table (exact/closest search match always on top)
   let q=$('productSearch').value.trim();
   let filteredProducts=products.filter(p=>productMatches(p,q));
   let visible=q?sortProductsBySearch(filteredProducts,q):[...filteredProducts].sort((a,b)=>new Date(a.created_at||0)-new Date(b.created_at||0));
@@ -274,7 +280,6 @@ function render(){
     return `<tr><td>${no}</td><td>${esc(p.name)}</td><td>${esc(p.category||'-')}</td><td>${esc(p.rack_no||'-')}</td><td>${p.stock_qty}</td><td>${money(p.purchase_rate)}</td><td>${money(p.dealer_rate)}</td><td>${money(p.retail_rate)}</td><td><div class="actions"><button class="secondary" onclick="editProduct('${p.id}')">Edit</button><button class="danger" onclick="deleteProduct('${p.id}')">Delete</button></div></td></tr>`;
   }).join('');
 
-  // Customers table with search filter + inline edit (including credit & due adjustment) + 0-balance delete
   let cq=norm($('customerSearch')?.value||'');
   let visibleCustomers=customers.filter(c=>{
     if(!cq)return true;
@@ -290,7 +295,7 @@ function render(){
     let sumEl=$('customerSearchSummary');
     if(visibleCustomers.length){
       sumEl.classList.remove('hidden');
-      sumEl.innerHTML=visibleCustomers.slice(0,5).map(c=>`<b>${esc(c.name)}</b>: Udhaar (Due) = <span class="bad">${money(customerDue(c))}</span> · Credit = <span class="good">${money(c.credit_balance||0)}</span>`).join(' &nbsp;|&nbsp; ');
+      sumEl.innerHTML=visibleCustomers.slice(0,5).map(c=>`<b>${esc(c.name)}</b>: Udhaar (Due) = <span class="bad">${money(customerDue(c))}</span> · Credit = <span class="good">${money(c.credit_balance||0)}</span>`).join('  |  ');
     }else{
       sumEl.classList.remove('hidden');
       sumEl.textContent='Is naam ka koi customer nahi mila.';
@@ -329,7 +334,6 @@ function render(){
 
   $('customerOptions').innerHTML=customers.map(c=>`<option value="${esc(c.name)}"></option>`).join('');
 
-  // Sales History: Date & Invoice hidden by default; shown inside Details
   let hq=norm($('historySearch')?.value||'');
   let visibleSales=sales.filter(s=>{
     if(!hq)return true;
@@ -359,8 +363,8 @@ function render(){
     <tr id="saleDetails-${s.id}" class="hidden">
       <td colspan="6">
         <div class="status" style="margin:4px 0 10px">
-          <strong>Invoice:</strong> ${esc(s.invoice_no)} &nbsp;|&nbsp;
-          <strong>Date:</strong> ${new Date(s.created_at).toLocaleString()} &nbsp;|&nbsp;
+          <strong>Invoice:</strong> ${esc(s.invoice_no)}  | 
+          <strong>Date:</strong> ${new Date(s.created_at).toLocaleString()}  | 
           <strong>Customer:</strong> ${esc(cname)}
         </div>
         <strong>Sold items:</strong>
@@ -385,12 +389,11 @@ function render(){
 }
 
 window.toggleSaleDetails=id=>{let row=$('saleDetails-'+id);if(row)row.classList.toggle('hidden')};
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&','<':'<','>':'>','"':'"',"'":'''}[c]))}
 $('productSearch').oninput=()=>render();
 if($('customerSearch'))$('customerSearch').oninput=()=>render();
 if($('historySearch'))$('historySearch').oninput=()=>render();
 
-// Product Save / Inline Edit / Delete
 let productSaving=false;
 $('saveProduct').onclick=async()=>{
   if(productSaving)return;
@@ -402,9 +405,9 @@ $('saveProduct').onclick=async()=>{
       let duplicate=products.some(p=>norm(p.name)===norm(v.name)&&norm(p.category)===norm(v.category)&&Number(p.purchase_rate||0)===v.purchase_rate&&Number(p.dealer_rate||0)===v.dealer_rate&&Number(p.retail_rate||0)===v.retail_rate);
       if(duplicate&&!confirm('Ye product pehle se saved hai. Phir bhi save karna hai?'))return;
     }
-    let r=editingProduct?await sb.from('products').update(v).eq('id',editingProduct):await sb.from('products').insert({...v,user_id:user.id});
+    let r=editingProduct?await sb.from('products').update(v).eq('id',editingProduct):await sb.from('products').insert({...v,user_id:user?.id||'offline'});
     if(r.error)throw r.error;
-    editingProduct=null;clearProduct();await loadAll();msg('globalMsg','Product saved to cloud.');
+    editingProduct=null;clearProduct();await loadAll();msg('globalMsg','Product saved.');
   }catch(e){msg('globalMsg',e.message,false)}finally{productSaving=false;$('saveProduct').disabled=false;$('saveProduct').textContent='Save product'}
 };
 function clearProduct(){['pName','pCat','pBuy','pRetail','pDealer','pStock','pRack'].forEach(x=>$(x).value='');editingProduct=null}
@@ -436,7 +439,6 @@ window.deleteProduct=async id=>{
   }catch(e){msg('globalMsg',e.message,false)}
 };
 
-// Customer Save / Inline Edit (with direct Due & Credit editing) / Delete
 let customerSaving=false;
 $('saveCustomer').onclick=async()=>{
   if(customerSaving)return;
@@ -448,14 +450,14 @@ $('saveCustomer').onclick=async()=>{
       address:$('cAddress').value.trim()||null,
       opening_balance:Math.max(0,+$('cOpening').value||0),
       credit_balance:Math.max(0,+$('cCredit').value||0),
-      user_id:user.id
+      user_id:user?.id||'offline'
     };
     if(!v.name)throw Error('Customer name is required');
     let r=await sb.from('customers').insert(v);
     if(r.error)throw r.error;
     ['cName','cPhone','cAddress'].forEach(x=>$(x).value='');
     $('cOpening').value=0;$('cCredit').value=0;
-    await loadAll();msg('globalMsg','Customer saved to cloud.');
+    await loadAll();msg('globalMsg','Customer saved.');
   }catch(e){msg('globalMsg',e.message,false)}finally{customerSaving=false;$('saveCustomer').disabled=false;$('saveCustomer').textContent='Save customer'}
 };
 
@@ -472,7 +474,6 @@ window.saveInlineCustomer=async id=>{
     let desiredCredit=Math.max(0,Number(tr.querySelector('[data-cf="credit_balance"]').value||0));
     if(!name)throw Error('Customer name is required');
 
-    // Sync total_due cleanly: if desiredDue < current sales due, reduce oldest sales due; else put remainder in opening_balance
     let custSales=sales.filter(s=>saleBelongsToCustomer(s,c)&&Number(s.due||0)>0).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
     let currentSalesDue=custSales.reduce((a,s)=>a+Number(s.due||0),0);
     let newOpening=0;
@@ -522,7 +523,6 @@ window.deleteCustomer=async id=>{
   }catch(e){msg('globalMsg',e.message,false)}
 };
 
-// NEW BILL: Custom Product Picker (Fixes 700ml vs 1000ml wrong price bug)
 function renderSalePicker(){
   let box=$('salePickerList');
   let q=$('saleSearch').value.trim();
@@ -583,7 +583,6 @@ $('addLine').onclick=()=>{
   if(!p){
     let term=norm($('saleSearch').value);
     if(!term)return msg('globalMsg','Product name type karein aur list se select karein.',false);
-    // Strict exact match first, otherwise top sorted match
     p=products.find(x=>norm(x.name)===term || norm(x.rack_no)===term || norm(x.rack_no)==='#'+term)
       || sortProductsBySearch(products.filter(x=>productMatches(x,term)),term)[0];
   }
@@ -639,7 +638,7 @@ async function saveCurrentBill(shouldPrint){
     let enteredName=titleWords($('saleCustomer').value);
     let customer=findCustomerByName(enteredName);
     if(!customer&&enteredName){
-      let made=await sb.from('customers').insert({user_id:user.id,name:enteredName,phone:null,address:null,opening_balance:0,credit_balance:0}).select().single();
+      let made=await sb.from('customers').insert({user_id:user?.id||'offline',name:enteredName,phone:null,address:null,opening_balance:0,credit_balance:0}).select().single();
       if(made.error)throw made.error;
       customer=made.data;
       customers.push(customer);
@@ -651,12 +650,10 @@ async function saveCurrentBill(shouldPrint){
     let enteredCash=Math.max(0,+$('billPaid').value||0);
     let type=$('billType').value;
 
-    // Step 1: Pehle customer ke Credit se pesay katenge
     let credit=Number(customer?.credit_balance||0);
     let creditUsed=customer?Math.min(credit,total):0;
     let remainingAfterCredit=total-creditUsed;
 
-    // Step 2: Baqi raqam cash paid se puri hogi, bacha to udhaar (due) mein jayega
     let paidFromCash=Math.min(enteredCash,remainingAfterCredit);
     let extraCash=Math.max(0,enteredCash-remainingAfterCredit);
     let due=Number((remainingAfterCredit-paidFromCash).toFixed(2));
@@ -668,7 +665,7 @@ async function saveCurrentBill(shouldPrint){
     let invoice='BPM-'+Date.now();
     let totalPaidOnBill=Number((paidFromCash+creditUsed).toFixed(2));
     let ins=await sb.from('sales').insert({
-      user_id:user.id,customer_id:cid,customer_name:enteredName||null,
+      user_id:user?.id||'offline',customer_id:cid,customer_name:enteredName||null,
       invoice_no:invoice,total,discount,paid:totalPaidOnBill,due,bill_type:type,rate_type:type
     }).select().single();
     if(ins.error)throw ins.error;
@@ -677,7 +674,7 @@ async function saveCurrentBill(shouldPrint){
     for(let x of cart){
       let prod=products.find(y=>y.id===x.id);
       let ir=await sb.from('sale_items').insert({
-        user_id:user.id,sale_id:saleId,product_id:x.id,product_name:x.name,
+        user_id:user?.id||'offline',sale_id:saleId,product_id:x.id,product_name:x.name,
         quantity:x.qty,dealer_rate:x.rate,unit_rate:x.rate,rate_type:type,
         purchase_rate:Number(prod.purchase_rate||0),line_total:x.qty*x.rate
       });
@@ -686,7 +683,6 @@ async function saveCurrentBill(shouldPrint){
       if(ur.error)throw ur.error;
     }
 
-    // Extra cash agar diya ho to pehle purana udhaar clear kare, phir credit mein jaye
     let extraLeft=extraCash;
     if(customer&&extraLeft>0){
       let opening=Number(customer.opening_balance||0),openingPay=Math.min(opening,extraLeft);
@@ -746,7 +742,7 @@ window.receivePayment=async id=>{
       if(r.error)throw r.error;
     }
     let logRes=await sb.from('customer_payments').insert({
-      user_id:user.id,
+      user_id:user?.id||'offline',
       customer_id:c.id,
       customer_name:c.name,
       amount:Number(amount.toFixed(2)),
@@ -769,7 +765,6 @@ window.markSalePaid=async id=>{
   }catch(e){msg('globalMsg','Paid update failed: '+e.message,false)}finally{salePaymentSaving.delete(id)}
 };
 
-// Bill Editor
 window.editSale=async id=>{
   let s=sales.find(x=>x.id===id);if(!s)return;
   let items=saleItems.filter(x=>x.sale_id===id);
@@ -792,7 +787,7 @@ window.saveSaleEdit=async id=>{
     for(let row of rows){
       let pid=row.querySelector('[data-edit-product]').value,p=products.find(x=>x.id===pid),qty=Number(row.querySelector('[data-edit-qty]').value),rate=Number(row.querySelector('[data-edit-rate]').value),old=saleItems.find(x=>x.id===row.dataset.editItem),returned=Number(old?.returned_quantity||0);
       if(!p||!Number.isInteger(qty)||qty<Math.max(1,returned)||!Number.isFinite(rate)||rate<0)throw Error('Product, quantity ya rate check karein.');
-      desired.push({old,p,product_id:pid,product_name:p.name,quantity:qty,unit_rate:rate,dealer_rate:rate,rate_type:sale.rate_type||'dealer',purchase_rate:Number(p.purchase_rate||0),line_total:qty*rate,user_id:user.id,sale_id:id,returned_quantity:returned});
+      desired.push({old,p,product_id:pid,product_name:p.name,quantity:qty,unit_rate:rate,dealer_rate:rate,rate_type:sale.rate_type||'dealer',purchase_rate:Number(p.purchase_rate||0),line_total:qty*rate,user_id:user?.id||'offline',sale_id:id,returned_quantity:returned});
     }
     if(!desired.length)throw Error('Bill mein kam az kam aik product hona zaroori hai.');
     let subtotal=desired.reduce((a,x)=>a+Math.max(0,x.quantity-x.returned_quantity)*x.unit_rate,0),discount=Math.max(0,Number($('editSaleDiscount').value||0));
@@ -806,7 +801,7 @@ window.saveSaleEdit=async id=>{
     for(let d of desired){if(d.old&&Number(d.old.returned_quantity||0)>0&&d.old.product_id!==d.product_id)throw Error('Returned item ka product change nahi kar sakte.');stockDeltas[d.product_id]=(stockDeltas[d.product_id]||0)-Math.max(0,d.quantity-d.returned_quantity)}
     for(let [pid,delta] of Object.entries(stockDeltas)){if(!delta)continue;let prod=products.find(x=>x.id===pid);if(!prod)continue;let next=Number(prod.stock_qty||0)+delta;if(next<0)throw Error(`Stock kam hai: ${prod.name}`);let ur=await sb.from('products').update({stock_qty:next}).eq('id',pid);if(ur.error)throw ur.error}
     for(let old of saleItems.filter(x=>x.sale_id===id)){if(!desired.some(d=>d.old?.id===old.id)){let del=await sb.from('sale_items').delete().eq('id',old.id);if(del.error)throw del.error}}
-    for(let d of desired){let payload={user_id:user.id,sale_id:id,product_id:d.product_id,product_name:d.product_name,quantity:d.quantity,unit_rate:d.unit_rate,dealer_rate:d.dealer_rate,rate_type:d.rate_type,purchase_rate:d.purchase_rate,line_total:d.line_total,returned_quantity:d.returned_quantity};let res=d.old?await sb.from('sale_items').update(payload).eq('id',d.old.id):await sb.from('sale_items').insert(payload);if(res.error)throw res.error}
+    for(let d of desired){let payload={user_id:user?.id||'offline',sale_id:id,product_id:d.product_id,product_name:d.product_name,quantity:d.quantity,unit_rate:d.unit_rate,dealer_rate:d.dealer_rate,rate_type:d.rate_type,purchase_rate:d.purchase_rate,line_total:d.line_total,returned_quantity:d.returned_quantity};let res=d.old?await sb.from('sale_items').update(payload).eq('id',d.old.id):await sb.from('sale_items').insert(payload);if(res.error)throw res.error}
     let upd=await sb.from('sales').update({total,discount,paid,due}).eq('id',id);if(upd.error)throw upd.error;
     await loadAll();closeSaleEditor();msg('globalMsg',`Bill updated. Total ${money(total)}, Paid ${money(paid)}, Due ${money(due)}.`);
   }catch(e){msg('globalMsg','Bill edit error: '+e.message,false)}finally{salePaymentSaving.delete(id)}
@@ -823,7 +818,6 @@ window.showCustomerBills=id=>{
   panel.scrollIntoView({behavior:'smooth',block:'start'});
 };
 
-// RETURNS SECTION: Customer khud likhein + Product khud likhein + Cash Refund vs Udhaar Cut vs Credit Add
 function renderReturnPicker(){
   let box=$('returnPickerList');
   let q=$('returnProductInput').value.trim();
@@ -916,7 +910,6 @@ function recalcReturnDefaults(autoSplit=false){
     let s=sales.find(x=>x.id===sid);
     let c=findCustomerByName($('returnCustomerInput').value);
     let dueAvail=s?Number(s.due||0):(c?customerDue(c):0);
-    // Pehle udhaar se cut, baqi default cash refund (credit 0 jab tak user khud credit na likhe)
     let cutDue=Math.min(dueAvail,total);
     let cashRef=Number((total-cutDue).toFixed(2));
     $('returnDueCut').value=cutDue;
@@ -927,7 +920,7 @@ function recalcReturnDefaults(autoSplit=false){
   let cash=Number($('returnCashRefund').value||0);
   let cut=Number($('returnDueCut').value||0);
   let cred=Number($('returnCreditAdd').value||0);
-  $('returnPreview').innerHTML=`Total Return: <b>${money(total)}</b> &rarr; Cash Wapas: <b>${money(cash)}</b> | Udhaar se Cut: <b>${money(cut)}</b> | Credit mein Jama: <b>${money(cred)}</b>`;
+  $('returnPreview').innerHTML=`Total Return: <b>${money(total)}</b> → Cash Wapas: <b>${money(cash)}</b> | Udhaar se Cut: <b>${money(cut)}</b> | Credit mein Jama: <b>${money(cred)}</b>`;
 }
 
 $('returnQty').addEventListener('input',()=>recalcReturnDefaults(true));
@@ -999,14 +992,14 @@ $('saveReturn').onclick=async()=>{
   try{
     let c=findCustomerByName(cname)||(sale?.customer_id?customers.find(x=>x.id===sale.customer_id):null);
     if(!c && cname && (dueCut>0 || creditAdd>0)){
-      let made=await sb.from('customers').insert({user_id:user.id,name:cname,phone:null,address:null,opening_balance:0,credit_balance:0}).select().single();
+      let made=await sb.from('customers').insert({user_id:user?.id||'offline',name:cname,phone:null,address:null,opening_balance:0,credit_balance:0}).select().single();
       if(made.error)throw made.error;
       c=made.data;
       customers.push(c);
     }
 
     let retPayload={
-      user_id:user.id,
+      user_id:user?.id||'offline',
       sale_id:sale?sale.id:null,
       customer_id:c?.id||null,
       customer_name:cname||sale?.customer_name||c?.name||'Walk-in',
@@ -1021,7 +1014,7 @@ $('saveReturn').onclick=async()=>{
     if(ret.error)throw ret.error;
 
     let ri=await sb.from('sales_return_items').insert({
-      user_id:user.id,
+      user_id:user?.id||'offline',
       return_id:ret.data.id,
       sale_item_id:saleItem?.id||null,
       product_id:product?.id||null,
@@ -1032,13 +1025,11 @@ $('saveReturn').onclick=async()=>{
     });
     if(ri.error)throw ri.error;
 
-    // Update sale_item returned_quantity if linked to a bill
     if(saleItem){
       let updItem=await sb.from('sale_items').update({returned_quantity:Number(saleItem.returned_quantity||0)+qty}).eq('id',saleItem.id);
       if(updItem.error)throw updItem.error;
     }
 
-    // Update linked sale total/due if bill was selected
     if(sale){
       let newTotal=Math.max(0,Number((Number(sale.total||0)-amount).toFixed(2)));
       let newDue=Math.max(0,Number((Number(sale.due||0)-dueCut).toFixed(2)));
@@ -1046,7 +1037,6 @@ $('saveReturn').onclick=async()=>{
       let updSale=await sb.from('sales').update({total:newTotal,paid:newPaid,due:newDue}).eq('id',sale.id);
       if(updSale.error)throw updSale.error;
     }else if(c && dueCut>0){
-      // Direct return without bill: cut from customer's due (opening balance first, then oldest due bills)
       let leftCut=dueCut;
       let op=Number(c.opening_balance||0);
       if(op>0){
@@ -1064,7 +1054,6 @@ $('saveReturn').onclick=async()=>{
       }
     }
 
-    // Add ONLY explicit creditAdd to customer's credit_balance (never automatic cash refund!)
     if(c && creditAdd>0){
       let fresh=await sb.from('customers').select('credit_balance').eq('id',c.id).single();
       let curCred=Number(fresh.data?.credit_balance??c.credit_balance??0);
@@ -1072,7 +1061,6 @@ $('saveReturn').onclick=async()=>{
       if(cr.error)throw cr.error;
     }
 
-    // Add returned stock to product inventory
     if(product){
       let stock=await sb.from('products').update({stock_qty:Number(product.stock_qty||0)+qty}).eq('id',product.id);
       if(stock.error)throw stock.error;
@@ -1086,7 +1074,6 @@ $('saveReturn').onclick=async()=>{
   }catch(e){msg('globalMsg','Return save error: '+e.message,false)}finally{btn.disabled=false;btn.textContent='Save Return'}
 };
 
-// Delete Return History WITHOUT deducting stock (stock stays in inventory until sold)
 window.deleteReturn=async id=>{
   let r=returnsData.find(x=>x.id===id);if(!r)return;
   if(!confirm(`Return record (${r.customer_name||''} - ${money(r.total_amount)}) delete karna hai?\n\nNote: Jo maal stock mein wapas add ho chuka hai wo stock mein hi rahega (kam nahi hoga) jab tak sale na ho.`))return;
@@ -1108,13 +1095,11 @@ function printInvoice(s,cname,items){
 }
 window.printSale=async id=>{let s=sales.find(x=>x.id===id);if(!s)return;let {data,error}=await sb.from('sale_items').select('*').eq('sale_id',id);if(error)return msg('globalMsg',error.message,false);let c=customers.find(x=>x.id===s.customer_id);printInvoice(s,s.customer_name||c?.name||'',data)};
 
-// Delete Sale from Sales History: does NOT delete customer account or wipe their other udhaar/payments
 window.deleteSale=async id=>{
   let s=sales.find(x=>x.id===id);if(!s)return;
   let ok=confirm(`Invoice ${s.invoice_no} (${s.customer_name||'Walk-in'}) ko Sales History se delete karna hai?\n\nCustomer ka account aur baqi udhaar/payments safe rahengi.`);
   if(!ok)return;
   try{
-    // Detach any return records so return history stays intact
     await sb.from('sales_returns').update({sale_id:null}).eq('sale_id',id);
     let {data:items,error:itemError}=await sb.from('sale_items').select('*').eq('sale_id',id);
     if(itemError)throw itemError;
@@ -1133,5 +1118,186 @@ window.deleteSale=async id=>{
   }catch(e){msg('globalMsg','Delete failed: '+e.message,false)}
 };
 
-(async()=>{let u=localStorage.getItem('bpm_url'),k=localStorage.getItem('bpm_key');if(u&&k){$('supUrl').value=u;$('supKey').value=k;sb=client();$('setup').classList.add('hidden');$('auth').classList.remove('hidden');$('setupMsg').textContent='Saved project details loaded. Log in to sync your data.';let {data}=await sb.auth.getSession();if(data.session){user=data.session.user;await boot()}}else{$('setup').classList.remove('hidden');$('auth').classList.remove('hidden')}})();
+// =========================================================================
+// OFFLINE + ONLINE BRIDGE (Transparently handles offline storage & cloud sync)
+// =========================================================================
+const CACHE_KEY='bpm_offline_snapshot_v1';
+const QUEUE_KEY='bpm_offline_queue_v1';
+const TABLE_MAP={products:()=>products,customers:()=>customers,sales:()=>sales,sale_items:()=>saleItems,sales_returns:()=>returnsData,sales_return_items:()=>returnItemsData,customer_payments:()=>paymentsData};
+
+function saveOfflineSnapshot(){
+  try{
+    localStorage.setItem(CACHE_KEY,JSON.stringify({products,customers,sales,saleItems,returnsData,returnItemsData,paymentsData}));
+    updateSyncIndicators();
+  }catch{}
+}
+function loadOfflineSnapshot(){
+  try{
+    let raw=localStorage.getItem(CACHE_KEY);
+    if(!raw)return false;
+    let d=JSON.parse(raw);
+    products=d.products||[];customers=d.customers||[];sales=d.sales||[];saleItems=d.saleItems||[];returnsData=d.returnsData||[];returnItemsData=d.returnItemsData||[];paymentsData=d.paymentsData||[];
+    updateSyncIndicators();
+    return true;
+  }catch{return false}
+}
+function getOfflineQueue(){try{return JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]')}catch{return[]}}
+function setOfflineQueue(q){localStorage.setItem(QUEUE_KEY,JSON.stringify(q));updateSyncIndicators()}
+function updateSyncIndicators(){
+  let online=navigator.onLine;
+  let badge=$('netStatusBadge');
+  if(badge){badge.textContent=online?'Online':'Offline';badge.className='net-pill '+(online?'net-on':'net-off')}
+  let q=getOfflineQueue();
+  let btn=$('syncQueueBtn');
+  if(btn){btn.textContent=`↻ Sync (${q.length})`;btn.classList.toggle('hidden',q.length===0)}
+}
+
+function createOfflineSupabaseProxy(realSb){
+  const makeQuery=(table)=>{
+    let state={op:'select',payload:null,filters:[],orderCol:null,orderAsc:true,singleRow:false,countOnly:false};
+    const execLocal=()=>{
+      let arr=TABLE_MAP[table]?TABLE_MAP[table]():[];
+      let matched=arr.filter(row=>state.filters.every(f=>String(row[f.col])===String(f.val)));
+      if(state.op==='select'){
+        if(state.countOnly)return{count:matched.length,data:null,error:null};
+        let out=[...matched];
+        if(state.orderCol)out.sort((a,b)=>state.orderAsc?String(a[state.orderCol]||'').localeCompare(String(b[state.orderCol]||'')):String(b[state.orderCol]||'').localeCompare(String(a[state.orderCol]||'')));
+        return{data:state.singleRow?(out[0]||null):out,error:null};
+      }
+      if(state.op==='insert'){
+        let rows=Array.isArray(state.payload)?state.payload:[state.payload];
+        let inserted=rows.map(r=>{
+          let item={id:r.id||('off-'+Date.now()+'-'+Math.random().toString(36).slice(2,7)),created_at:r.created_at||new Date().toISOString(),...r};
+          arr.unshift(item);
+          let q=getOfflineQueue();q.push({table,op:'insert',data:item});setOfflineQueue(q);
+          return item;
+        });
+        saveOfflineSnapshot();
+        return{data:state.singleRow?inserted[0]:inserted,error:null};
+      }
+      if(state.op==='update'){
+        matched.forEach(row=>{
+          Object.assign(row,state.payload);
+          let q=getOfflineQueue();q.push({table,op:'update',id:row.id,data:state.payload});setOfflineQueue(q);
+        });
+        saveOfflineSnapshot();
+        return{data:matched,error:null};
+      }
+      if(state.op==='delete'){
+        let target=TABLE_MAP[table]?TABLE_MAP[table]():null;
+        if(target){
+          for(let i=target.length-1;i>=0;i--){
+            if(state.filters.every(f=>String(target[i][f.col])===String(f.val))){
+              let rem=target.splice(i,1)[0];
+              let q=getOfflineQueue();q.push({table,op:'delete',id:rem.id});setOfflineQueue(q);
+            }
+          }
+        }
+        saveOfflineSnapshot();
+        return{data:null,error:null};
+      }
+      return{data:null,error:null};
+    };
+    const builder={
+      select(_,opts){if(opts?.head)state.countOnly=true;return builder},
+      insert(data){state.op='insert';state.payload=data;return builder},
+      update(data){state.op='update';state.payload=data;return builder},
+      delete(){state.op='delete';return builder},
+      eq(col,val){state.filters.push({col,val});return builder},
+      order(col,opts){state.orderCol=col;state.orderAsc=opts?.ascending!==false;return builder},
+      single(){state.singleRow=true;return builder},
+      then(resolve,reject){
+        if(!navigator.onLine||!realSb||!user)return Promise.resolve(execLocal()).then(resolve,reject);
+        let q=realSb.from(table);
+        if(state.op==='select')q=q.select('*',state.countOnly?{count:'exact',head:true}:undefined);
+        else if(state.op==='insert')q=q.insert(state.payload);
+        else if(state.op==='update')q=q.update(state.payload);
+        else if(state.op==='delete')q=q.delete();
+        state.filters.forEach(f=>{q=q.eq(f.col,f.val)});
+        if(state.orderCol)q=q.order(state.orderCol,{ascending:state.orderAsc});
+        if(state.singleRow)q=q.single();
+        return q.then(res=>{
+          if(res?.error&&String(res.error.message||'').toLowerCase().includes('fetch'))return execLocal();
+          return res;
+        }).catch(()=>execLocal()).then(resolve,reject);
+      }
+    };
+    return builder;
+  };
+  return new Proxy(realSb||{},{
+    get(target,prop){
+      if(prop==='from')return(table)=>makeQuery(table);
+      return target[prop];
+    }
+  });
+}
+
+const origClient=client;
+client=function(){return createOfflineSupabaseProxy(window.supabase?origClient():null)};
+
+async function syncPendingOfflineData(){
+  let rawSb=window.supabase&&localStorage.getItem('bpm_url')&&localStorage.getItem('bpm_key')?origClient():null;
+  if(!navigator.onLine||!rawSb||!user)return msg('globalMsg','Online connection aur login zaroori hai sync karne ke liye.',false);
+  let q=getOfflineQueue();
+  if(!q.length)return msg('globalMsg','Tamam data pehle se synced hai.');
+  let remaining=[];
+  for(let item of q){
+    try{
+      if(item.op==='insert'){
+        let payload={...item.data,user_id:user.id};
+        if(String(payload.id).startsWith('off-'))delete payload.id;
+        let {error}=await rawSb.from(item.table).insert(payload);
+        if(error)throw error;
+      }else if(item.op==='update'&&!String(item.id).startsWith('off-')){
+        let {error}=await rawSb.from(item.table).update(item.data).eq('id',item.id);
+        if(error)throw error;
+      }else if(item.op==='delete'&&!String(item.id).startsWith('off-')){
+        let {error}=await rawSb.from(item.table).delete().eq('id',item.id);
+        if(error)throw error;
+      }
+    }catch{remaining.push(item)}
+  }
+  setOfflineQueue(remaining);
+  if(!remaining.length){
+    sb=createOfflineSupabaseProxy(rawSb);
+    await loadAll();
+    msg('globalMsg','Tamam offline data Supabase cloud par sync ho gaya!');
+  }
+}
+
+$('syncQueueBtn').onclick=syncPendingOfflineData;
+$('settingsSyncNow').onclick=syncPendingOfflineData;
+window.addEventListener('online',()=>{updateSyncIndicators();syncPendingOfflineData()});
+window.addEventListener('offline',()=>{updateSyncIndicators();msg('globalMsg','Internet band ho gaya — Offline Mode chalu hai, aapka data device par save hota rahe ga.',true)});
+
+async function enterOfflineApp(){
+  sb=createOfflineSupabaseProxy(null);
+  loadOfflineSnapshot();
+  $('setup').classList.add('hidden');$('auth').classList.add('hidden');$('app').classList.remove('hidden');$('globalMsg').classList.add('hidden');
+  $('userbar').innerHTML='<span>Offline Mode</span><button id="goOnlineLogin" style="width:auto;padding:7px 12px;background:#e8eef5;color:#18324d">Cloud Login</button>';
+  $('goOnlineLogin').onclick=()=>{$('app').classList.add('hidden');$('setup').classList.remove('hidden');$('auth').classList.remove('hidden')};
+  render();setTab(localStorage.getItem('bpm_active_tab')||'dashboard');
+}
+$('offlineModeBtn').onclick=enterOfflineApp;
+$('authOfflineBtn').onclick=enterOfflineApp;
+
+(async()=>{
+  updateSyncIndicators();
+  let u=localStorage.getItem('bpm_url'),k=localStorage.getItem('bpm_key');
+  if(u&&k){
+    $('supUrl').value=u;$('supKey').value=k;
+    if(window.supabase?.createClient&&navigator.onLine){
+      sb=client();$('setup').classList.add('hidden');$('auth').classList.remove('hidden');
+      $('setupMsg').textContent='Saved project details loaded. Log in to sync your data.';
+      let {data}=await sb.auth.getSession();
+      if(data.session){user=data.session.user;await boot();await syncPendingOfflineData();return}
+    }else if(loadOfflineSnapshot()){
+      await enterOfflineApp();
+    }
+  }else if(loadOfflineSnapshot()){
+    await enterOfflineApp();
+  }else{
+    $('setup').classList.remove('hidden');$('auth').classList.remove('hidden');
+  }
+})();
 </script></body></html>
